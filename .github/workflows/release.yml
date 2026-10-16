@@ -13,7 +13,7 @@ on:
       release_title:
         description: 'Release Title'
         required: false
-        default: 'The College Life We Didn'\''t Have - Mobile & Web Release'
+        default: "The College Life We Didn't Have - Mobile & Web Release"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -45,14 +45,8 @@ jobs:
           echo "TAG=${TAG}" >> $GITHUB_OUTPUT
 
       # ------------------------------------------------------------------------
-      # Set up Java & Node Runtimes
+      # Build Spring Boot Backend JAR (JDK 21)
       # ------------------------------------------------------------------------
-      - name: Set up JDK 17 (Android Build)
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
       - name: Set up JDK 21 (Spring Boot Backend)
         uses: actions/setup-java@v4
         with:
@@ -60,22 +54,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      # ------------------------------------------------------------------------
-      # Build Spring Boot Backend JAR
-      # ------------------------------------------------------------------------
       - name: Build Backend Service (Spring Boot 3)
         working-directory: backend
         run: mvn clean package -DskipTests -B
@@ -87,6 +65,13 @@ jobs:
       # ------------------------------------------------------------------------
       # Build Frontend & Sync Capacitor
       # ------------------------------------------------------------------------
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Install Frontend Dependencies
         working-directory: frontend
         run: npm ci
@@ -100,8 +85,17 @@ jobs:
         run: npx cap sync android
 
       # ------------------------------------------------------------------------
-      # Build Android Release APK and Google Play AAB Bundle
+      # Build Android Release APK and Google Play AAB Bundle (JDK 17)
       # ------------------------------------------------------------------------
+      - name: Set up JDK 17 (Android Build)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Setup Keystore (Optional Secrets or Fallback)
         id: setup_keystore
         run: |

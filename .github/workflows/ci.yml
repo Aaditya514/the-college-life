@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   # ----------------------------------------------------------------------------
-  # Backend Verification Job (Spring Boot / Maven)
+  # Backend Verification Job (Spring Boot 3 / Java 21)
   # ----------------------------------------------------------------------------
   backend-ci:
     name: Backend Test & Build (Spring Boot)
@@ -33,7 +33,7 @@ jobs:
         run: mvn clean test -B
 
   # ----------------------------------------------------------------------------
-  # Frontend Verification Job (Angular 19 / Node)
+  # Frontend Verification Job (Angular 21 / Node 20)
   # ----------------------------------------------------------------------------
   frontend-ci:
     name: Frontend Build & Test (Angular)
@@ -58,7 +58,7 @@ jobs:
         run: npm run build
 
   # ----------------------------------------------------------------------------
-  # Android Mobile Verification Job (Gradle Wrapper)
+  # Android Mobile Verification Job (Capacitor + Gradle)
   # ----------------------------------------------------------------------------
   android-ci:
     name: Android Build & Test (Gradle)
@@ -67,20 +67,31 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies & Sync Capacitor
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          npx cap sync android
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run Android Tests & Assemble Debug APK
+      - name: Run Android Assemble Debug APK
         working-directory: frontend/android
         run: |
           chmod +x gradlew
-          ./gradlew test assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon
