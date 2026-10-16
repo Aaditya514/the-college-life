@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { StoryService } from '../../services/story.service';
 import { AuthService } from '../../services/auth.service';
@@ -15,130 +15,59 @@ import { Story } from '../../models/story.model';
     <div class="profile-page">
       <div class="container profile-container">
 
-        <!-- Top Instagram-style Profile Header -->
-        <header class="profile-hero-card">
-          <!-- Left: Big Avatar with Interactive Ring & Camera Icon -->
-          <div class="hero-avatar-col">
-            <div 
-              class="profile-avatar-ring" 
-              (click)="openAvatarMenu()" 
-              title="Click to view, change, or remove photo">
-              @if (displayAvatarUrl()) {
-                <img [src]="displayAvatarUrl()!" alt="Profile Avatar" class="profile-avatar-img">
-              } @else {
-                <div class="profile-avatar-fallback">
-                  {{ (displayPseudonym().slice(0, 2) || 'CL').toUpperCase() }}
-                </div>
-              }
-              @if (isOwnProfile()) {
-                <div class="avatar-camera-pill" title="Update photo">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                  </svg>
-                </div>
-              }
-            </div>
-
-            <!-- Hidden input for photo upload -->
-            <input #fileInput type="file" accept="image/*" (change)="onAvatarSelected($event)" hidden>
+        <!-- Top Instagram-style Profile Header Bar -->
+        <header class="profile-header-bar">
+          <div class="profile-top-title">
+            <h2 class="top-handle">{{ cleanPseudonym() }}</h2>
           </div>
 
-          <!-- Right: Profile Info, Bio, Stats, Actions -->
-          <div class="hero-details-col">
-            <!-- Top Username + Action Buttons Bar -->
-            <div class="hero-action-bar">
-              <div class="username-group">
-                <h1 class="profile-username">&#64;{{ displayPseudonym() }}</h1>
-                <span class="verified-alumni-badge" title="Verified Alumni Contributor">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  <span>Contributor</span>
-                </span>
-              </div>
+          <!-- Top Right Settings / Hamburger Button -->
+          <button 
+            type="button" 
+            class="settings-menu-trigger" 
+            (click)="openSettingsSheet()" 
+            title="Settings & Options"
+            aria-label="Settings">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <line x1="4" y1="18" x2="20" y2="18"/>
+            </svg>
+          </button>
+        </header>
 
-              <!-- Action Buttons -->
-              <div class="profile-actions-row">
-                @if (isOwnProfile()) {
-                  <button type="button" class="btn btn-secondary btn-sm" (click)="openEditModal()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    <span>Edit Profile</span>
-                  </button>
-
-                  <button type="button" class="btn btn-secondary btn-sm" (click)="openPasswordModal()" title="Change Password">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                    <span>Change Password</span>
-                  </button>
-
-                  <a routerLink="/my-stories" class="btn btn-primary btn-sm btn-workspace" title="Go to Submissions Desk">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                      <path d="M6 6h10"/><path d="M6 10h10"/>
-                    </svg>
-                    <span>Workspace Desk</span>
-                  </a>
-
-                  <button type="button" class="btn btn-ghost btn-sm btn-share-icon" (click)="shareProfile()" title="Share Profile">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                    </svg>
-                  </button>
-
-                  <button 
-                    type="button" 
-                    class="btn btn-secondary btn-sm btn-theme-toggle" 
-                    (click)="themeService.toggleTheme()" 
-                    [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
-                    @if (themeService.isDark()) {
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
-                      </svg>
-                      <span>Light</span>
-                    } @else {
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                      </svg>
-                      <span>Dark</span>
-                    }
-                  </button>
+        <!-- Main Instagram-style Profile Card -->
+        <section class="profile-hero-card">
+          <!-- Row 1: Profile Photo on the Left, Stats Counters on the Right -->
+          <div class="hero-top-row">
+            <!-- Left: Avatar Circle with Ring and optional camera badge -->
+            <div class="hero-avatar-col">
+              <div 
+                class="profile-avatar-ring" 
+                (click)="openAvatarMenu()" 
+                title="Click to view or change photo">
+                @if (displayAvatarUrl()) {
+                  <img [src]="displayAvatarUrl()!" alt="Profile Avatar" class="profile-avatar-img">
                 } @else {
-                  <button type="button" class="btn btn-primary btn-sm" (click)="toggleFollow()">
-                    {{ isFollowed() ? 'Following' : 'Follow Author' }}
-                  </button>
-                  <button type="button" class="btn btn-ghost btn-sm btn-share-icon" (click)="shareProfile()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  <div class="profile-avatar-fallback">
+                    {{ (cleanPseudonym().slice(0, 2) || 'CL').toUpperCase() }}
+                  </div>
+                }
+                @if (isOwnProfile()) {
+                  <div class="avatar-camera-pill" title="Update photo">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
                     </svg>
-                  </button>
-                  <button 
-                    type="button" 
-                    class="btn btn-secondary btn-sm btn-theme-toggle" 
-                    (click)="themeService.toggleTheme()" 
-                    [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
-                    @if (themeService.isDark()) {
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
-                      </svg>
-                    } @else {
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                      </svg>
-                    }
-                  </button>
+                  </div>
                 }
               </div>
+
+              <!-- Hidden input for photo upload -->
+              <input #fileInput type="file" accept="image/*" (change)="onAvatarSelected($event)" hidden>
             </div>
 
-            <!-- Instagram-style Numeric Stats Row -->
+            <!-- Right: Stats Row (Stories & Reactions ONLY - No Saved count) -->
             <div class="profile-stats-counters">
               <div class="stat-pill">
                 <span class="stat-num">{{ publishedStories().length }}</span>
@@ -148,40 +77,48 @@ import { Story } from '../../models/story.model';
                 <span class="stat-num">{{ totalReactionsEarned() }}</span>
                 <span class="stat-text">reactions</span>
               </div>
-              <div class="stat-pill">
-                <span class="stat-num">{{ storyService.savedCount() }}</span>
-                <span class="stat-text">saved</span>
-              </div>
-            </div>
-
-            <!-- Bio Block & Metadata -->
-            <div class="profile-bio-box">
-              <p class="bio-text">
-                {{ displayBio() || 'Alumni recollecting the chapters that never made it to the yearbooks. Sharing anonymous memories and unconfessed regrets.' }}
-              </p>
-
-              <div class="bio-meta-row">
-                <span class="meta-tag">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                  {{ displayJoined() }}
-                </span>
-
-                @if (isOwnProfile() && authService.currentUser()?.email) {
-                  <span class="meta-tag email-tag">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    {{ authService.currentUser()!.email }}
-                  </span>
-                }
-              </div>
             </div>
           </div>
-        </header>
+
+          <!-- Row 2: Full-Width Username (No @) and Contributor Badge underneath ONLY if published stories > 0 -->
+          <div class="profile-identity-block">
+            <h1 class="profile-username">{{ cleanPseudonym() }}</h1>
+            @if (publishedStories().length > 0) {
+              <div class="contributor-badge-wrap">
+                <span class="verified-alumni-badge" title="Active Contributor">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span>Contributor</span>
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Row 3: Bio Text ONLY (no timestamp, no email address) -->
+          @if (displayBio()) {
+            <div class="profile-bio-box">
+              <p class="bio-text">{{ displayBio() }}</p>
+            </div>
+          }
+
+          <!-- Row 4: Clean Action Buttons (Edit Profile, or Follow if external author) -->
+          <div class="profile-actions-bar">
+            @if (isOwnProfile()) {
+              <button type="button" class="btn btn-secondary btn-full-profile" (click)="openEditModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                <span>Edit Profile</span>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-primary btn-full-profile" (click)="toggleFollow()">
+                {{ isFollowed() ? 'Following' : 'Follow Author' }}
+              </button>
+            }
+          </div>
+        </section>
 
         <!-- Toast Notification for Copying / Feedback -->
         @if (toastMessage()) {
@@ -190,30 +127,22 @@ import { Story } from '../../models/story.model';
           </div>
         }
 
-        <!-- Instagram Profile Navigation Tabs -->
+        <!-- 2 Clean Instagram-Style Tabs: [Posts Grid] and [Saved Stories] -->
         <nav class="profile-nav-tabs">
           <button 
             type="button" 
             class="tab-link" 
             [class.active]="activeTab() === 'grid'"
-            (click)="activeTab.set('grid')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            (click)="activeTab.set('grid')"
+            title="Stories Grid"
+            aria-label="Stories">
+            <!-- Grid 4-Squares Icon -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
             </svg>
-            <span>Stories Grid</span>
-          </button>
-
-          <button 
-            type="button" 
-            class="tab-link" 
-            [class.active]="activeTab() === 'feed'"
-            (click)="activeTab.set('feed')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-            </svg>
-            <span>Detailed Feed</span>
           </button>
 
           @if (isOwnProfile()) {
@@ -221,27 +150,18 @@ import { Story } from '../../models/story.model';
               type="button" 
               class="tab-link" 
               [class.active]="activeTab() === 'saved'"
-              (click)="activeTab.set('saved')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              (click)="activeTab.set('saved')"
+              title="Saved Stories"
+              aria-label="Saved">
+              <!-- Bookmark Ribbon Icon -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
               </svg>
-              <span>Saved Archive</span>
             </button>
           }
-
-          <button 
-            type="button" 
-            class="tab-link" 
-            [class.active]="activeTab() === 'about'"
-            (click)="activeTab.set('about')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
-            <span>About Persona</span>
-          </button>
         </nav>
 
-        <!-- Content Area: Tab 1: Instagram 3-Column Stories Grid -->
+        <!-- Tab 1: Stories Grid -->
         @if (activeTab() === 'grid') {
           @if (publishedStories().length > 0) {
             <div class="insta-stories-grid">
@@ -263,50 +183,15 @@ import { Story } from '../../models/story.model';
             <div class="empty-profile-box">
               <div class="empty-icon-bubble">📖</div>
               <h3>No public stories yet</h3>
-              <p>When &#64;{{ displayPseudonym() }} publishes memories, they will appear in this author grid.</p>
+              <p>When {{ cleanPseudonym() }} publishes memories, they will appear in this author grid.</p>
               @if (isOwnProfile()) {
-                <a routerLink="/share" class="btn btn-primary">Publish your first story</a>
+                <a routerLink="/share" class="btn btn-primary" style="margin-top: 14px;">Publish your first story</a>
               }
             </div>
           }
         }
 
-        <!-- Content Area: Tab 2: Detailed Feed List -->
-        @if (activeTab() === 'feed') {
-          @if (publishedStories().length > 0) {
-            <div class="feed-stories-list">
-              @for (story of publishedStories(); track story.id) {
-                <article class="feed-story-card card-editorial">
-                  <div class="feed-card-header">
-                    <span class="time-read">{{ story.readingTime }}</span>
-                  </div>
-
-                  <h2 class="feed-title">
-                    <a [routerLink]="['/stories', story.id]">{{ story.title }}</a>
-                  </h2>
-
-                  <p class="feed-excerpt">{{ story.excerpt }}</p>
-
-                  <div class="feed-card-footer">
-                    <div class="reactions-chips">
-                      <span class="r-chip">🤝 {{ story.reactions.relatable }} Relatable</span>
-                      <span class="r-chip">🖤 {{ story.reactions.feltThis }} Felt This</span>
-                      <span class="r-chip">🫂 {{ story.reactions.support }} Support</span>
-                    </div>
-
-                    <a [routerLink]="['/stories', story.id]" class="btn btn-secondary btn-sm">Read Full Story</a>
-                  </div>
-                </article>
-              }
-            </div>
-          } @else {
-            <div class="empty-profile-box">
-              <p>No stories available in feed.</p>
-            </div>
-          }
-        }
-
-        <!-- Content Area: Tab 3: Saved Archive -->
+        <!-- Tab 2: Saved Archive -->
         @if (activeTab() === 'saved') {
           @if (storyService.savedStories().length > 0) {
             <div class="saved-preview-grid">
@@ -315,63 +200,143 @@ import { Story } from '../../models/story.model';
                   <span class="saved-badge">Saved</span>
                   <h4 class="saved-card-title">{{ saved.title }}</h4>
                   <p class="saved-card-excerpt">{{ saved.excerpt }}</p>
-                  <span class="saved-author">&#64;{{ saved.authorPseudonym }}</span>
+                  <span class="saved-author">{{ cleanString(saved.authorPseudonym) }}</span>
                 </div>
               }
             </div>
             <div class="saved-cta-row">
-              <a routerLink="/saved" class="btn btn-secondary">Open Full Collections & Saved Desk &rarr;</a>
+              <a routerLink="/saved" class="btn btn-secondary">Open Full Saved Collection &rarr;</a>
             </div>
           } @else {
             <div class="empty-profile-box">
               <div class="empty-icon-bubble">🔖</div>
               <h3>No saved memories</h3>
               <p>Explore the archive and bookmark stories you resonate with to see them here.</p>
-              <a routerLink="/explore" class="btn btn-secondary">Explore Stories</a>
+              <a routerLink="/explore" class="btn btn-secondary" style="margin-top: 14px;">Explore Stories</a>
             </div>
           }
-        }
-
-        <!-- Content Area: Tab 4: About Persona -->
-        @if (activeTab() === 'about') {
-          <div class="about-persona-card card-editorial">
-            <h3 class="about-title">About the Storyteller</h3>
-            <p class="about-lead">
-              {{ displayBio() }}
-            </p>
-
-            <div class="about-traits-grid">
-              <div class="trait-box">
-                <span class="trait-lbl">Pen Name</span>
-                <span class="trait-val">&#64;{{ displayPseudonym() }}</span>
-              </div>
-              <div class="trait-box">
-                <span class="trait-lbl">Identity Status</span>
-                <span class="trait-val">Protected & Anonymous</span>
-              </div>
-              <div class="trait-box">
-                <span class="trait-lbl">Member Since</span>
-                <span class="trait-val">{{ displayJoined() }}</span>
-              </div>
-              <div class="trait-box">
-                <span class="trait-lbl">Total Contributions</span>
-                <span class="trait-val">{{ publishedStories().length }} Archived Memories</span>
-              </div>
-            </div>
-
-            <div class="anonymity-notice">
-              <strong>🔒 Anonymity Shield:</strong>
-              <p>
-                In accordance with our Community Honor Code, this author's real legal identity and college enrollment records are permanently decouple-encrypted. All stories are vetted to protect living individuals.
-              </p>
-            </div>
-          </div>
         }
 
       </div>
     </div>
 
-    <!-- EDIT PROFILE MODAL -->
+    <!-- SETTINGS / HAMBURGER BOTTOM SHEET MENU -->
+    @if (isSettingsOpen()) {
+      <div class="modal-backdrop fade-in" (click)="closeSettingsSheet()">
+        <div class="settings-sheet scale-in" (click)="$event.stopPropagation()">
+          <div class="sheet-handle-bar"></div>
+          <div class="sheet-header">
+            <h3 class="sheet-title">Settings & Activity</h3>
+            <button type="button" class="close-modal-btn" (click)="closeSettingsSheet()">✕</button>
+          </div>
+
+          <div class="settings-items-list">
+            @if (isOwnProfile()) {
+              <!-- Edit Profile -->
+              <button type="button" class="settings-item-row" (click)="openEditModal(); closeSettingsSheet()">
+                <div class="settings-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </div>
+                <div class="settings-item-content">
+                  <span class="settings-item-label">Edit Profile</span>
+                  <span class="settings-item-sub">Change pen name, bio & avatar</span>
+                </div>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+
+              <!-- Change Password Option inside Edit Profile -->
+              <button type="button" class="settings-item-row" (click)="openPasswordFromSettings()">
+                <div class="settings-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div class="settings-item-content">
+                  <span class="settings-item-label">Change Password</span>
+                  <span class="settings-item-sub">Update account password credentials</span>
+                </div>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+
+              <!-- Workspace Desk -->
+              <a routerLink="/my-stories" class="settings-item-row" (click)="closeSettingsSheet()">
+                <div class="settings-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                    <path d="M6 6h10"/><path d="M6 10h10"/>
+                  </svg>
+                </div>
+                <div class="settings-item-content">
+                  <span class="settings-item-label">Workspace Desk</span>
+                  <span class="settings-item-sub">Manage drafts and submissions</span>
+                </div>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            }
+
+            <!-- Share Profile -->
+            <button type="button" class="settings-item-row" (click)="shareProfile(); closeSettingsSheet()">
+              <div class="settings-item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+              </div>
+              <div class="settings-item-content">
+                <span class="settings-item-label">Share Profile</span>
+                <span class="settings-item-sub">Copy public link to author profile</span>
+              </div>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <!-- Theme Toggle -->
+            <button type="button" class="settings-item-row" (click)="themeService.toggleTheme()">
+              <div class="settings-item-icon">
+                @if (themeService.isDark()) {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+                  </svg>
+                } @else {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                  </svg>
+                }
+              </div>
+              <div class="settings-item-content">
+                <span class="settings-item-label">Appearance</span>
+                <span class="settings-item-sub">{{ themeService.isDark() ? 'Dark Theme (Tap for Light)' : 'Light Theme (Tap for Dark)' }}</span>
+              </div>
+              <span class="settings-toggle-badge">{{ themeService.isDark() ? 'Dark' : 'Light' }}</span>
+            </button>
+
+            @if (isOwnProfile()) {
+              <div class="settings-divider"></div>
+
+              <!-- Sign Out -->
+              <button type="button" class="settings-item-row text-danger" (click)="handleLogout(); closeSettingsSheet()">
+                <div class="settings-item-icon danger-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                </div>
+                <div class="settings-item-content">
+                  <span class="settings-item-label danger-text">Sign Out</span>
+                  <span class="settings-item-sub">Log out of your account</span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- EDIT PROFILE MODAL (Includes Integrated Change Password Option) -->
     @if (isEditModalOpen()) {
       <div class="modal-backdrop fade-in" (click)="closeEditModal()">
         <div class="edit-modal-card scale-in" (click)="$event.stopPropagation()">
@@ -384,16 +349,13 @@ import { Story } from '../../models/story.model';
             <!-- Pen Name Field -->
             <div class="form-group">
               <label class="form-label">Pen Name / Handle</label>
-              <div class="input-prefix-wrap">
-                <span class="input-prefix">&#64;</span>
-                <input 
-                  type="text" 
-                  class="form-input with-prefix" 
-                  [(ngModel)]="editPseudonym" 
-                  placeholder="pen_name"
-                  maxlength="30">
-              </div>
-              <span class="form-hint">This anonymous handle will appear on all your stories and comments.</span>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="editPseudonym" 
+                placeholder="Pen Name without @"
+                maxlength="30">
+              <span class="form-hint">This name will appear on your stories and profile.</span>
             </div>
 
             <!-- Bio Field -->
@@ -401,84 +363,91 @@ import { Story } from '../../models/story.model';
               <label class="form-label">Bio (Public Reflection)</label>
               <textarea 
                 class="form-textarea" 
-                rows="4" 
+                rows="3" 
                 [(ngModel)]="editBio" 
-                placeholder="Share your college background, regrets, or what you learned after convocation..."
+                placeholder="Share your background, college thoughts, or what you learned..."
                 maxlength="240"></textarea>
               <span class="form-hint">{{ 240 - editBio.length }} characters remaining</span>
             </div>
 
+            <!-- Password Accordion / Section inside Edit Profile -->
+            <div class="password-accordion-box">
+              <button 
+                type="button" 
+                class="password-accordion-btn" 
+                (click)="togglePasswordSection()">
+                <div class="acc-btn-left">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <span>Change Password</span>
+                </div>
+                <svg 
+                  class="acc-chevron" 
+                  [class.rotated]="showPasswordSection()" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+
+              @if (showPasswordSection()) {
+                <div class="password-accordion-content fade-in">
+                  @if (passwordErrorMessage()) {
+                    <div class="pass-msg error-msg">{{ passwordErrorMessage() }}</div>
+                  }
+                  @if (passwordSuccessMessage()) {
+                    <div class="pass-msg success-msg">{{ passwordSuccessMessage() }}</div>
+                  }
+
+                  <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <input 
+                      type="password" 
+                      class="form-input" 
+                      [(ngModel)]="currentPasswordInput" 
+                      placeholder="Enter current password">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input 
+                      type="password" 
+                      class="form-input" 
+                      [(ngModel)]="newPasswordInput" 
+                      placeholder="Minimum 6 characters">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input 
+                      type="password" 
+                      class="form-input" 
+                      [(ngModel)]="confirmNewPasswordInput" 
+                      placeholder="Repeat new password">
+                  </div>
+
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary btn-sm btn-update-pass" 
+                    [disabled]="isSavingPassword()" 
+                    (click)="submitChangePassword()">
+                    {{ isSavingPassword() ? 'Updating Password...' : 'Update Password' }}
+                  </button>
+                </div>
+              }
+            </div>
 
           </div>
 
           <div class="modal-footer">
             <button type="button" class="btn btn-ghost" (click)="closeEditModal()">Cancel</button>
-            <button type="button" class="btn btn-primary" (click)="saveProfile()">Save Changes</button>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- CHANGE PASSWORD MODAL -->
-    @if (isPasswordModalOpen()) {
-      <div class="modal-backdrop fade-in" (click)="closePasswordModal()">
-        <div class="card-editorial edit-profile-modal scale-in" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3 class="modal-title">🔐 Change Password</h3>
-            <button type="button" class="close-btn" (click)="closePasswordModal()">✕</button>
-          </div>
-
-          <div class="modal-body">
-            @if (passwordErrorMessage()) {
-              <div class="alert-banner error-banner fade-in" style="margin-bottom: 16px; padding: 10px 14px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #ef4444; font-size: 0.88rem;">
-                <span>{{ passwordErrorMessage() }}</span>
-              </div>
-            }
-
-            <form (ngSubmit)="submitChangePassword()" class="edit-profile-form">
-              <div class="form-group">
-                <label class="form-label" for="currentPassInput">Current Password</label>
-                <input 
-                  id="currentPassInput"
-                  type="password" 
-                  class="form-input" 
-                  [(ngModel)]="currentPasswordInput" 
-                  name="currentPass" 
-                  placeholder="Enter current password" 
-                  required>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="newPassInput">New Password</label>
-                <input 
-                  id="newPassInput"
-                  type="password" 
-                  class="form-input" 
-                  [(ngModel)]="newPasswordInput" 
-                  name="newPass" 
-                  placeholder="Minimum 6 characters" 
-                  required>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="confirmPassInput">Confirm New Password</label>
-                <input 
-                  id="confirmPassInput"
-                  type="password" 
-                  class="form-input" 
-                  [(ngModel)]="confirmNewPasswordInput" 
-                  name="confirmPass" 
-                  placeholder="Repeat new password" 
-                  required>
-              </div>
-
-              <div class="modal-footer" style="padding-top: 16px;">
-                <button type="button" class="btn btn-ghost" (click)="closePasswordModal()" [disabled]="isSavingPassword()">Cancel</button>
-                <button type="submit" class="btn btn-primary" [disabled]="isSavingPassword()">
-                  {{ isSavingPassword() ? 'Updating...' : 'Update Password' }}
-                </button>
-              </div>
-            </form>
+            <button type="button" class="btn btn-primary" (click)="saveProfile()">Save Profile</button>
           </div>
         </div>
       </div>
@@ -490,7 +459,7 @@ import { Story } from '../../models/story.model';
         <div class="avatar-action-sheet scale-in" (click)="$event.stopPropagation()">
           <div class="sheet-header">
             <h3 class="sheet-title">Profile Photo</h3>
-            <p class="sheet-sub">&#64;{{ displayPseudonym() }}</p>
+            <p class="sheet-sub">{{ cleanPseudonym() }}</p>
           </div>
 
           <div class="sheet-options-list">
@@ -538,7 +507,7 @@ import { Story } from '../../models/story.model';
         <div class="photo-viewer-card scale-in" (click)="$event.stopPropagation()">
           <div class="viewer-header">
             <div class="viewer-user-tag">
-              <span class="viewer-handle">&#64;{{ displayPseudonym() }}</span>
+              <span class="viewer-handle">{{ cleanPseudonym() }}</span>
               <span class="viewer-sub">Author Profile Picture</span>
             </div>
             <button type="button" class="viewer-close-btn" (click)="closePhotoViewer()" title="Close">✕</button>
@@ -564,22 +533,66 @@ import { Story } from '../../models/story.model';
   `,
   styles: [`
     .profile-page {
-      padding: var(--space-2xl) 16px var(--space-4xl);
+      padding: var(--space-xl) 16px var(--space-4xl);
       min-height: 80vh;
     }
 
     .profile-container {
-      max-width: 920px;
+      max-width: 680px;
       margin: 0 auto;
     }
 
-    /* Instagram-Style Hero Header */
+    /* Top Instagram-Style Header Bar */
+    .profile-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0 18px 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+      margin-bottom: 20px;
+    }
+
+    .top-handle {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-ink);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .settings-menu-trigger {
+      background: none;
+      border: none;
+      color: var(--color-ink);
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+    .settings-menu-trigger:hover {
+      background-color: var(--color-canvas);
+    }
+    .settings-menu-trigger:active {
+      transform: scale(0.92);
+    }
+
+    /* Instagram-Style Profile Card */
     .profile-hero-card {
       display: flex;
-      gap: 36px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--color-border);
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 0;
+      padding-bottom: 20px;
+    }
+
+    /* Top Row: Photo on Left, Stats on Right */
+    .hero-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
     }
 
     .hero-avatar-col {
@@ -588,13 +601,13 @@ import { Story } from '../../models/story.model';
 
     .profile-avatar-ring {
       position: relative;
-      width: 120px;
-      height: 120px;
+      width: 86px;
+      height: 86px;
       border-radius: 50%;
       cursor: pointer;
-      padding: 4px;
+      padding: 3px;
       background: linear-gradient(135deg, #8B2635 0%, #D4A373 50%, #6E1A27 100%);
-      box-shadow: 0 4px 16px rgba(139, 38, 53, 0.18);
+      box-shadow: 0 4px 14px rgba(139, 38, 53, 0.2);
       transition: transform 0.2s ease;
     }
     .profile-avatar-ring:hover {
@@ -607,7 +620,7 @@ import { Story } from '../../models/story.model';
       border-radius: 50%;
       object-fit: cover;
       background: var(--color-surface);
-      border: 3px solid var(--color-surface);
+      border: 2px solid var(--color-surface);
     }
 
     .profile-avatar-fallback {
@@ -615,22 +628,22 @@ import { Story } from '../../models/story.model';
       height: 100%;
       border-radius: 50%;
       background: var(--color-accent-subtle);
-      border: 3px solid var(--color-surface);
+      border: 2px solid var(--color-surface);
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: var(--font-mono);
       font-weight: 700;
       color: var(--color-accent-primary);
-      font-size: 2.2rem;
+      font-size: 1.65rem;
     }
 
     .avatar-camera-pill {
       position: absolute;
-      bottom: 2px;
-      right: 2px;
-      width: 30px;
-      height: 30px;
+      bottom: 0px;
+      right: 0px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background-color: var(--color-accent-primary);
       color: #FFFFFF;
@@ -641,131 +654,107 @@ import { Story } from '../../models/story.model';
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
     }
 
-    .hero-details-col {
+    /* Stats Counters Row (Stories & Reactions ONLY) */
+    .profile-stats-counters {
       flex: 1;
-      min-width: 0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+    }
+
+    .stat-pill {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 2px;
     }
 
-    .hero-action-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 14px;
+    .stat-num {
+      font-weight: 700;
+      font-size: 1.35rem;
+      color: var(--color-ink);
+      line-height: 1.1;
     }
 
-    .username-group {
+    .stat-text {
+      font-size: 0.85rem;
+      color: var(--color-ink-secondary);
+      font-weight: 500;
+    }
+
+    /* Row 2: Full-Width Username Line & Contributor Badge */
+    .profile-identity-block {
+      width: 100%;
+      margin-top: 14px;
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
     }
 
     .profile-username {
-      font-size: 1.85rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: var(--color-ink);
       margin: 0;
-      line-height: 1.15;
+      line-height: 1.2;
+      width: 100%;
+      text-align: left;
+    }
+
+    .contributor-badge-wrap {
+      margin-top: 3px;
     }
 
     .verified-alumni-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      padding: 3px 8px;
+      padding: 3px 9px;
       background: #E8F8F0;
       color: #1E824C;
       border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(30, 130, 76, 0.12);
     }
 
-    .profile-actions-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn-workspace {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-share-icon {
-      padding: 7px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Counters Row (Instagram Style) */
-    .profile-stats-counters {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-    }
-
-    .stat-pill {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      font-size: 0.95rem;
-    }
-
-    .stat-num {
-      font-weight: 700;
-      font-size: 1.15rem;
-      color: var(--color-ink);
-    }
-
-    .stat-text {
-      color: var(--color-ink-secondary);
-    }
-
-    /* Bio Block */
+    /* Row 3: Bio Text ONLY (no timestamps, no email) */
     .profile-bio-box {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      margin-top: 8px;
+      width: 100%;
+      text-align: left;
     }
 
     .bio-text {
-      font-size: 0.95rem;
-      line-height: 1.55;
+      font-size: 0.94rem;
+      line-height: 1.5;
       color: var(--color-ink);
       margin: 0;
       white-space: pre-line;
-      max-width: 650px;
     }
 
-    .bio-meta-row {
+    /* Row 4: Clean Action Buttons */
+    .profile-actions-bar {
+      margin-top: 16px;
+      width: 100%;
+    }
+
+    .btn-full-profile {
+      width: 100%;
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    .meta-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.78rem;
-      color: var(--color-ink-muted);
-      font-weight: 500;
-    }
-
-    .email-tag {
-      background: var(--color-canvas);
-      padding: 2px 8px;
-      border-radius: 10px;
-      border: 1px solid var(--color-border-subtle);
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.92rem;
     }
 
     /* Toast */
@@ -780,28 +769,23 @@ import { Story } from '../../models/story.model';
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
-    /* Tabs Navigation (Instagram Style) */
+    /* 2 Icon-Only Instagram Tabs */
     .profile-nav-tabs {
       display: flex;
-      justify-content: center;
-      gap: 36px;
       border-bottom: 1px solid var(--color-border);
-      margin-top: 8px;
-      margin-bottom: 28px;
+      margin-top: 14px;
+      margin-bottom: 22px;
     }
 
     .tab-link {
+      flex: 1;
       background: none;
       border: none;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 14px 4px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--color-ink-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      justify-content: center;
+      padding: 12px;
+      color: var(--color-ink-muted);
       cursor: pointer;
       position: relative;
       transition: color 0.15s ease;
@@ -823,46 +807,36 @@ import { Story } from '../../models/story.model';
       border-radius: 2px 2px 0 0;
     }
 
-    /* 3-Column Stories Grid (Instagram Style) */
+    /* Stories Grid */
     .insta-stories-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
     }
 
     .grid-story-tile {
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
-      padding: 20px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 200px;
+      min-height: 180px;
       cursor: pointer;
       text-decoration: none;
       position: relative;
       transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
     .grid-story-tile:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       border-color: var(--color-accent-primary);
-    }
-
-    .tile-top-pill {
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 8px;
-      display: inline-block;
-      color: var(--color-accent-primary);
     }
 
     .tile-title {
       font-family: var(--font-serif);
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       line-height: 1.35;
       color: var(--color-ink);
       margin: 0 0 8px 0;
@@ -873,10 +847,10 @@ import { Story } from '../../models/story.model';
     }
 
     .tile-excerpt {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--color-ink-muted);
       line-height: 1.45;
-      margin: 0 0 14px 0;
+      margin: 0 0 12px 0;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
@@ -886,7 +860,7 @@ import { Story } from '../../models/story.model';
     .tile-footer-hover {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       padding-top: 10px;
       border-top: 1px solid var(--color-border-subtle);
       font-size: 0.78rem;
@@ -898,90 +872,11 @@ import { Story } from '../../models/story.model';
       color: var(--color-accent-primary);
     }
 
-    /* Detailed Feed List */
-    .feed-stories-list {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .feed-story-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-    }
-
-    .feed-card-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .pillar-tag {
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: var(--color-canvas);
-      color: var(--color-ink);
-    }
-
-    .story-category-tag {
-      font-size: 0.75rem;
-      color: var(--color-ink-muted);
-    }
-
-    .time-read {
-      font-size: 0.75rem;
-      color: var(--color-ink-subtle);
-      margin-left: auto;
-    }
-
-    .feed-title {
-      font-size: 1.35rem;
-      margin: 0 0 8px;
-    }
-    .feed-title a {
-      color: var(--color-ink);
-      text-decoration: none;
-    }
-    .feed-title a:hover {
-      color: var(--color-accent-primary);
-    }
-
-    .feed-excerpt {
-      font-family: var(--font-serif);
-      font-size: 0.98rem;
-      color: var(--color-ink-secondary);
-      line-height: 1.6;
-      margin: 0 0 16px;
-    }
-
-    .feed-card-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 14px;
-      border-top: 1px solid var(--color-border-subtle);
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .reactions-chips {
-      display: flex;
-      gap: 10px;
-      font-size: 0.82rem;
-      color: var(--color-ink-secondary);
-    }
-
     /* Saved Tab Preview Grid */
     .saved-preview-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 20px;
     }
 
@@ -989,7 +884,7 @@ import { Story } from '../../models/story.model';
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
-      padding: 18px;
+      padding: 16px;
       cursor: pointer;
       text-decoration: none;
       transition: transform 0.15s ease;
@@ -1005,12 +900,12 @@ import { Story } from '../../models/story.model';
       text-transform: uppercase;
     }
     .saved-card-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       margin: 6px 0;
       color: var(--color-ink);
     }
     .saved-card-excerpt {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--color-ink-muted);
       line-height: 1.45;
       display: -webkit-box;
@@ -1029,98 +924,28 @@ import { Story } from '../../models/story.model';
       margin-top: 16px;
     }
 
-    /* About Tab */
-    .about-persona-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-    }
-
-    .about-title {
-      font-size: 1.4rem;
-      margin: 0 0 12px;
-    }
-
-    .about-lead {
-      font-family: var(--font-serif);
-      font-size: 1.1rem;
-      line-height: 1.7;
-      color: var(--color-ink-secondary);
-      margin-bottom: 24px;
-    }
-
-    .about-traits-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .trait-box {
-      background: var(--color-canvas);
-      padding: 14px 16px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--color-border-subtle);
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .trait-lbl {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--color-ink-muted);
-      letter-spacing: 0.05em;
-    }
-
-    .trait-val {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--color-ink);
-    }
-
-    .anonymity-notice {
-      background-color: #F8F9FA;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      padding: 16px 18px;
-      font-size: 0.88rem;
-      color: var(--color-ink-secondary);
-      line-height: 1.5;
-    }
-    .anonymity-notice strong {
-      color: var(--color-ink);
-      display: block;
-      margin-bottom: 4px;
-    }
-    .anonymity-notice p {
-      margin: 0;
-    }
-
     /* Empty Box */
     .empty-profile-box {
       text-align: center;
-      padding: 48px 24px;
+      padding: 44px 20px;
       background: var(--color-surface);
       border: 1px dashed var(--color-border);
       border-radius: var(--radius-lg);
     }
     .empty-icon-bubble {
-      font-size: 2.8rem;
-      margin-bottom: 12px;
+      font-size: 2.6rem;
+      margin-bottom: 10px;
     }
 
-    /* Edit Profile Modal */
+    /* Modal Backdrop */
     .modal-backdrop {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(27, 30, 33, 0.65);
-      backdrop-filter: blur(4px);
+      background-color: rgba(20, 22, 25, 0.65);
+      backdrop-filter: blur(5px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1128,6 +953,116 @@ import { Story } from '../../models/story.model';
       padding: 16px;
     }
 
+    /* Settings Sheet Modal */
+    .settings-sheet {
+      background-color: var(--color-surface);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 -6px 36px rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+      animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .sheet-handle-bar {
+      width: 40px;
+      height: 4px;
+      background-color: var(--color-border);
+      border-radius: 2px;
+      margin: 10px auto 4px auto;
+    }
+
+    .settings-items-list {
+      padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 8px));
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .settings-item-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: none;
+      border: none;
+      text-decoration: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      color: var(--color-ink);
+      box-sizing: border-box;
+    }
+    .settings-item-row:hover {
+      background-color: var(--color-canvas);
+    }
+    .settings-item-row:active {
+      transform: scale(0.99);
+    }
+
+    .settings-item-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-color: var(--color-canvas);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-accent-primary);
+      flex-shrink: 0;
+      border: 1px solid var(--color-border-subtle);
+    }
+
+    .settings-item-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .settings-item-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--color-ink);
+    }
+
+    .settings-item-sub {
+      font-size: 0.78rem;
+      color: var(--color-ink-muted);
+    }
+
+    .settings-toggle-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background-color: var(--color-canvas);
+      color: var(--color-ink);
+      border: 1px solid var(--color-border-subtle);
+    }
+
+    .settings-divider {
+      height: 1px;
+      background-color: var(--color-border-subtle);
+      margin: 6px 0;
+    }
+
+    .chevron {
+      color: var(--color-ink-muted);
+    }
+
+    .danger-text {
+      color: #DC2626 !important;
+    }
+    .danger-icon {
+      color: #DC2626 !important;
+      background-color: rgba(220, 38, 38, 0.08) !important;
+      border-color: rgba(220, 38, 38, 0.2) !important;
+    }
+
+    /* Edit Profile Modal */
     .edit-modal-card {
       background-color: var(--color-surface);
       border-radius: var(--radius-lg);
@@ -1136,33 +1071,40 @@ import { Story } from '../../models/story.model';
       max-width: 480px;
       box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
       overflow: hidden;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 18px 24px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--color-border-subtle);
+      flex-shrink: 0;
     }
     .modal-title {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       margin: 0;
       color: var(--color-ink);
+      font-weight: 700;
     }
     .close-modal-btn {
       background: none;
       border: none;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       color: var(--color-ink-muted);
       cursor: pointer;
+      padding: 4px;
     }
 
     .modal-body {
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
+      overflow-y: auto;
     }
 
     .form-group {
@@ -1175,21 +1117,6 @@ import { Story } from '../../models/story.model';
       font-size: 0.85rem;
       font-weight: 600;
       color: var(--color-ink);
-    }
-
-    .input-prefix-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .input-prefix {
-      position: absolute;
-      left: 12px;
-      font-weight: 700;
-      color: var(--color-ink-muted);
-    }
-    .form-input.with-prefix {
-      padding-left: 30px;
     }
 
     .form-input, .form-textarea {
@@ -1215,13 +1142,79 @@ import { Story } from '../../models/story.model';
       color: var(--color-ink-muted);
     }
 
+    /* Password Accordion inside Edit Profile */
+    .password-accordion-box {
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--color-canvas);
+    }
+
+    .password-accordion-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: none;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+    .acc-btn-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-ink);
+    }
+    .acc-chevron {
+      color: var(--color-ink-muted);
+      transition: transform 0.2s ease;
+    }
+    .acc-chevron.rotated {
+      transform: rotate(180deg);
+    }
+
+    .password-accordion-content {
+      padding: 14px;
+      border-top: 1px solid var(--color-border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--color-surface);
+    }
+
+    .btn-update-pass {
+      margin-top: 4px;
+      align-self: flex-start;
+    }
+
+    .pass-msg {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+    }
+    .error-msg {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+    .success-msg {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #16a34a;
+    }
+
     .modal-footer {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
-      padding: 16px 24px;
+      padding: 14px 20px;
       border-top: 1px solid var(--color-border-subtle);
       background: var(--color-canvas);
+      flex-shrink: 0;
     }
 
     /* Avatar Action Sheet */
@@ -1235,21 +1228,27 @@ import { Story } from '../../models/story.model';
       overflow: hidden;
     }
     .sheet-header {
-      padding: 20px 24px 14px;
+      padding: 16px 20px 12px;
       text-align: center;
       border-bottom: 1px solid var(--color-border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .sheet-title {
       font-size: 1.15rem;
-      margin: 0 0 4px 0;
+      margin: 0;
       color: var(--color-ink);
+      font-weight: 700;
     }
     .sheet-sub {
       font-size: 0.8rem;
       color: var(--color-ink-muted);
       margin: 0;
     }
+
     .sheet-options-list {
+      padding: 8px 0;
       display: flex;
       flex-direction: column;
     }
@@ -1257,39 +1256,39 @@ import { Story } from '../../models/story.model';
       display: flex;
       align-items: center;
       gap: 12px;
-      width: 100%;
-      padding: 14px 24px;
+      padding: 13px 20px;
       background: none;
       border: none;
-      border-bottom: 1px solid var(--color-border-subtle);
-      font-size: 0.92rem;
-      font-weight: 600;
+      font-size: 0.95rem;
       color: var(--color-ink);
       cursor: pointer;
       text-align: left;
-      transition: background-color 0.12s ease;
+      width: 100%;
+      transition: background-color 0.15s ease;
     }
     .sheet-option-btn:hover {
       background-color: var(--color-canvas);
     }
     .sheet-option-btn.primary-action {
+      font-weight: 600;
       color: var(--color-accent-primary);
     }
     .sheet-option-btn.text-danger {
-      color: #C0392B;
+      color: #DC2626;
     }
+
     .sheet-footer {
-      padding: 12px 16px;
-      background-color: var(--color-canvas);
+      padding: 10px 16px;
+      border-top: 1px solid var(--color-border-subtle);
+      background: var(--color-canvas);
     }
     .sheet-cancel-btn {
       width: 100%;
       padding: 10px;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      font-size: 0.88rem;
+      border: none;
+      background: none;
       font-weight: 600;
+      font-size: 0.92rem;
       color: var(--color-ink-secondary);
       cursor: pointer;
     }
@@ -1301,20 +1300,20 @@ import { Story } from '../../models/story.model';
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(18, 20, 24, 0.85);
+      background-color: rgba(10, 12, 14, 0.88);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 2001;
+      z-index: 2100;
       padding: 16px;
-      backdrop-filter: blur(5px);
     }
     .photo-viewer-card {
       background-color: var(--color-surface);
       border-radius: var(--radius-lg);
       width: 100%;
       max-width: 440px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
       border: 1px solid var(--color-border);
       overflow: hidden;
     }
@@ -1322,35 +1321,28 @@ import { Story } from '../../models/story.model';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-bottom: 1px solid var(--color-border-subtle);
     }
     .viewer-user-tag {
       display: flex;
       flex-direction: column;
-      gap: 2px;
     }
     .viewer-handle {
-      font-size: 0.98rem;
       font-weight: 700;
+      font-size: 0.95rem;
       color: var(--color-ink);
     }
     .viewer-sub {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--color-ink-muted);
     }
     .viewer-close-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--color-canvas);
-      border: 1px solid var(--color-border);
-      font-size: 0.9rem;
-      color: var(--color-ink-secondary);
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: var(--color-ink-muted);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     .viewer-image-box {
       display: flex;
@@ -1371,14 +1363,14 @@ import { Story } from '../../models/story.model';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 20px;
+      padding: 12px 18px;
       border-top: 1px solid var(--color-border-subtle);
       background-color: var(--color-canvas);
     }
 
     /* Animations */
     .fade-in {
-      animation: fadeIn 0.2s ease-out;
+      animation: fadeIn 0.18s ease-out;
     }
     .scale-in {
       animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1388,55 +1380,46 @@ import { Story } from '../../models/story.model';
       to { opacity: 1; }
     }
     @keyframes scaleUp {
-      from { transform: scale(0.95); opacity: 0; }
+      from { transform: scale(0.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
 
-    /* Responsive */
+    /* Responsive Mobile Layout */
     @media (max-width: 768px) {
       .profile-page {
-        padding: 16px 12px calc(72px + env(safe-area-inset-bottom, 0px));
+        padding: 12px 14px calc(72px + env(safe-area-inset-bottom, 0px));
       }
-      .profile-hero-card {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 16px;
-        padding-bottom: 20px;
+      .profile-header-bar {
+        padding-top: 2px;
+        margin-bottom: 14px;
       }
-      .hero-details-col {
-        align-items: center;
-        width: 100%;
+      .hero-top-row {
+        gap: 20px;
       }
-      .hero-action-bar {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
+      .profile-avatar-ring {
+        width: 80px;
+        height: 80px;
       }
-      .profile-actions-row {
-        justify-content: center;
-        width: 100%;
-        flex-wrap: wrap;
-        gap: 8px;
+      .profile-username {
+        font-size: 1.25rem;
       }
-      .profile-stats-counters {
-        justify-content: center;
-        gap: 18px;
-        width: 100%;
+      .stat-num {
+        font-size: 1.2rem;
       }
-      .bio-meta-row {
-        justify-content: center;
+      .stat-text {
+        font-size: 0.8rem;
       }
       .insta-stories-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        grid-template-columns: 1fr;
+        gap: 12px;
       }
       .saved-preview-grid {
         grid-template-columns: 1fr;
-      }
-      .about-traits-grid {
-        grid-template-columns: 1fr;
+        gap: 12px;
       }
 
       /* Mobile Modal Bottom Sheets */
@@ -1462,6 +1445,14 @@ import { Story } from '../../models/story.model';
         border-right: none;
         animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
+      .settings-sheet {
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 100%;
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+      }
       .modal-footer {
         padding-bottom: calc(16px + env(safe-area-inset-bottom, 8px));
       }
@@ -1469,61 +1460,37 @@ import { Story } from '../../models/story.model';
         padding-bottom: calc(14px + env(safe-area-inset-bottom, 8px));
       }
     }
-
-    @media (max-width: 480px) {
-      .profile-avatar-ring {
-        width: 90px;
-        height: 90px;
-      }
-      .profile-username {
-        font-size: 1.45rem;
-      }
-      .insta-stories-grid {
-        grid-template-columns: 1fr;
-      }
-      .profile-nav-tabs {
-        gap: 8px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-      }
-      .tab-link {
-        padding: 8px 10px;
-      }
-      .tab-link span {
-        font-size: 0.76rem;
-      }
-    }
-
-    @keyframes slideUpSheet {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
   `]
 })
 export class ProfileComponent implements OnInit {
   storyService = inject(StoryService);
   authService = inject(AuthService);
   themeService = inject(ThemeService);
+  router = inject(Router);
   route = inject(ActivatedRoute);
 
-  // Active tab in profile
-  activeTab = signal<'grid' | 'feed' | 'saved' | 'about'>('grid');
+  // Active tab in profile: strictly 'grid' (posts) or 'saved'
+  activeTab = signal<'grid' | 'saved'>('grid');
 
   // Author handle from route param (optional)
   routeHandle = signal<string | null>(null);
+
+  // Settings Bottom Sheet Menu
+  isSettingsOpen = signal<boolean>(false);
 
   // Edit Profile Modal
   isEditModalOpen = signal<boolean>(false);
   editPseudonym = '';
   editBio = '';
 
-  // Change Password Modal
-  isPasswordModalOpen = signal<boolean>(false);
+  // Password section inside Edit Profile
+  showPasswordSection = signal<boolean>(false);
   isSavingPassword = signal<boolean>(false);
   currentPasswordInput = '';
   newPasswordInput = '';
   confirmNewPasswordInput = '';
   passwordErrorMessage = signal<string | null>(null);
+  passwordSuccessMessage = signal<string | null>(null);
 
   // Avatar and Lightbox Modals
   isAvatarMenuOpen = signal<boolean>(false);
@@ -1549,12 +1516,16 @@ export class ProfileComponent implements OnInit {
   isOwnProfile = computed(() => {
     const handle = this.routeHandle();
     if (!handle) return true;
-    const current = this.storyService.currentPseudonym().toLowerCase();
+    const current = this.cleanString(this.storyService.currentPseudonym()).toLowerCase();
     return handle.toLowerCase() === current;
   });
 
   displayPseudonym = computed(() => {
     return this.routeHandle() || this.storyService.currentPseudonym();
+  });
+
+  cleanPseudonym = computed(() => {
+    return this.cleanString(this.displayPseudonym());
   });
 
   displayAvatarUrl = computed(() => {
@@ -1571,31 +1542,51 @@ export class ProfileComponent implements OnInit {
     return 'Anonymous storyteller contributing to the collective student archive.';
   });
 
-  displayJoined = computed(() => {
-    if (this.isOwnProfile()) {
-      return this.authService.currentUser()?.joinedAt || 'Joined Archive';
-    }
-    return 'Active Contributor';
-  });
-
   publishedStories = computed(() => {
-    const handle = this.displayPseudonym().toLowerCase();
+    const handle = this.cleanPseudonym().toLowerCase();
     if (this.isOwnProfile()) {
       return this.storyService.myStories().filter(s => s.status === 'published');
     }
-    return this.storyService.stories().filter(s => s.authorPseudonym.toLowerCase() === handle);
+    return this.storyService.stories().filter(s => this.cleanString(s.authorPseudonym).toLowerCase() === handle);
   });
 
   totalReactionsEarned = computed(() => {
     return this.publishedStories().reduce((acc, s) =>
-      acc + s.reactions.relatable + s.reactions.feltThis + s.reactions.support + s.reactions.laugh, 0
+      acc + (s.reactions?.relatable || 0) + (s.reactions?.feltThis || 0) + (s.reactions?.support || 0) + (s.reactions?.laugh || 0), 0
     );
   });
 
+  cleanString(str?: string): string {
+    if (!str) return '';
+    return str.replace(/^@/, '');
+  }
+
+  // Settings Bottom Sheet
+  openSettingsSheet(): void {
+    this.isSettingsOpen.set(true);
+  }
+
+  closeSettingsSheet(): void {
+    this.isSettingsOpen.set(false);
+  }
+
+  openPasswordFromSettings(): void {
+    this.closeSettingsSheet();
+    this.openEditModal();
+    this.showPasswordSection.set(true);
+  }
+
+  // Edit Profile Modal
   openEditModal(): void {
     const user = this.authService.currentUser();
-    this.editPseudonym = this.storyService.currentPseudonym();
+    this.editPseudonym = this.cleanPseudonym();
     this.editBio = user?.bio || '';
+    this.showPasswordSection.set(false);
+    this.passwordErrorMessage.set(null);
+    this.passwordSuccessMessage.set(null);
+    this.currentPasswordInput = '';
+    this.newPasswordInput = '';
+    this.confirmNewPasswordInput = '';
     this.isEditModalOpen.set(true);
   }
 
@@ -1603,8 +1594,12 @@ export class ProfileComponent implements OnInit {
     this.isEditModalOpen.set(false);
   }
 
+  togglePasswordSection(): void {
+    this.showPasswordSection.update(v => !v);
+  }
+
   async saveProfile(): Promise<void> {
-    const trimmedPseudo = this.editPseudonym.trim().replace(/^@/, '');
+    const trimmedPseudo = this.cleanString(this.editPseudonym.trim());
     if (!trimmedPseudo || trimmedPseudo.length < 3) {
       alert('Pen name must be at least 3 characters long.');
       return;
@@ -1623,21 +1618,9 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  openPasswordModal(): void {
-    this.currentPasswordInput = '';
-    this.newPasswordInput = '';
-    this.confirmNewPasswordInput = '';
-    this.passwordErrorMessage.set(null);
-    this.isPasswordModalOpen.set(true);
-  }
-
-  closePasswordModal(): void {
-    this.isPasswordModalOpen.set(false);
-    this.passwordErrorMessage.set(null);
-  }
-
   async submitChangePassword(): Promise<void> {
     this.passwordErrorMessage.set(null);
+    this.passwordSuccessMessage.set(null);
 
     if (!this.currentPasswordInput) {
       this.passwordErrorMessage.set('Please enter your current password.');
@@ -1656,7 +1639,10 @@ export class ProfileComponent implements OnInit {
     try {
       const res = await this.authService.changePassword(this.currentPasswordInput, this.newPasswordInput);
       if (res.success) {
-        this.closePasswordModal();
+        this.currentPasswordInput = '';
+        this.newPasswordInput = '';
+        this.confirmNewPasswordInput = '';
+        this.passwordSuccessMessage.set('Password updated successfully!');
         this.showToast('Password updated successfully!');
       } else {
         this.passwordErrorMessage.set(res.error || res.message || 'Failed to change password. Please check your current password.');
@@ -1668,6 +1654,7 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  // Avatar Actions
   openAvatarMenu(): void {
     this.isAvatarMenuOpen.set(true);
   }
@@ -1714,7 +1701,7 @@ export class ProfileComponent implements OnInit {
   }
 
   shareProfile(): void {
-    const url = window.location.origin + '/profile/' + this.displayPseudonym();
+    const url = window.location.origin + '/profile/' + this.cleanPseudonym();
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(() => {
         this.showToast('Author profile link copied to clipboard!');
@@ -1727,6 +1714,12 @@ export class ProfileComponent implements OnInit {
   toggleFollow(): void {
     this.isFollowed.update(f => !f);
     this.showToast(this.isFollowed() ? 'Following author updates!' : 'Unfollowed author.');
+  }
+
+  handleLogout(): void {
+    this.authService.logout();
+    this.showToast('You have been logged out.');
+    this.router.navigate(['/login']);
   }
 
   private showToast(msg: string): void {
