@@ -99,11 +99,9 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Copy Built Web Assets to Capacitor Android
+      - name: Sync Capacitor Android Project
         working-directory: frontend
-        run: |
-          mkdir -p android/app/src/main/assets/public
-          npx cap copy android
+        run: npx cap sync android
 
       - name: Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v4

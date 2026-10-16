@@ -100,11 +100,9 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Copy Built Web Assets to Capacitor Android
+      - name: Sync Capacitor Android Project
         working-directory: frontend
-        run: |
-          mkdir -p android/app/src/main/assets/public
-          npx cap copy android
+        run: npx cap sync android
 
       # ------------------------------------------------------------------------
       # Build Android Release APK and Google Play AAB Bundle
@@ -144,11 +142,28 @@ jobs:
 
       - name: Prepare Android Binaries
         run: |
-          cp frontend/android/app/build/outputs/apk/release/app-release.apk ./TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk
-          cp frontend/android/app/build/outputs/bundle/release/app-release.aab ./TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab
-          sha256sum ./TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk > SHA256SUMS.txt
-          sha256sum ./TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab >> SHA256SUMS.txt
-          sha256sum ./TheCollegeLife-backend-${{ steps.get_version.outputs.TAG }}.jar >> SHA256SUMS.txt
+          APK="frontend/android/app/build/outputs/apk/release/app-release.apk"
+          AAB="frontend/android/app/build/outputs/bundle/release/app-release.aab"
+          JAR="./TheCollegeLife-backend-${{ steps.get_version.outputs.TAG }}.jar"
+          > SHA256SUMS.txt
+          if [ -f "$APK" ]; then
+            echo "Packaging release APK..."
+            cp "$APK" ./TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk
+            sha256sum ./TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk >> SHA256SUMS.txt
+          else
+            echo "::warning::Release APK not found at $APK"
+          fi
+          if [ -f "$AAB" ]; then
+            echo "Packaging Play Store AAB bundle..."
+            cp "$AAB" ./TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab
+            sha256sum ./TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab >> SHA256SUMS.txt
+          else
+            echo "::warning::Release AAB not found at $AAB"
+          fi
+          if [ -f "$JAR" ]; then
+            echo "Adding backend JAR checksum..."
+            sha256sum "$JAR" >> SHA256SUMS.txt
+          fi
 
       # ------------------------------------------------------------------------
       # Publish GitHub Release
