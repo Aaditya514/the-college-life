@@ -1,177 +1,47 @@
-# 📋 Remaining Deliverables & Phased Implementation Spec
+# 📋 Remaining Deliverables & Production Roadmap
 
 > **Project:** The College Life We Didn't Have  
-> **Reference:** Original Project Blueprint & Phased Architecture Specification (Prompt 1)  
-> **Current Status:** Phase 0 (Visual Shell, Layouts & Interactive Prototyping) Completed ✅  
+> **Repository:** [github.com/Aaditya514/the-college-life](https://github.com/Aaditya514/the-college-life)  
+> **Current Status:** All Core Development Phases (0 through 6) Completed ✅  
 
 ---
 
-## 🎯 High-Level Status Across Approved Phases
+## 🎯 Engineering Status Across Phases
 
 | Phase | Description | Architecture / Tech | Status |
 |:---|:---|:---|:---:|
-| **Phase 0** | **Inspect, Plan & Generate Main Layout** | Angular 21, Signals, Responsive CSS | **COMPLETED (100%)** |
-| **Phase 1** | **Finalize Design System & Frontend Interactions** | Clickable tags, explore filters, quote cards | **COMPLETED (100%)** |
-| **Phase 2** | **Backend & Database Architecture** | Java Spring Boot 3, PostgreSQL, Flyway, JPA | **COMPLETED (100%)** |
-| **Phase 3** | **Authentication & Story Management** | Spring Security, JWT, ML Auto-Moderation | **REMAINING (0%)** |
-| **Phase 4** | **Reactions & Discovery Engine** | Reaction persistence, full-text search, sort | **REMAINING (0%)** |
-| **Phase 5** | **Reporting & Moderation Workbench** | Admin queue, audit logs, safety reports | **REMAINING (0%)** |
-| **Phase 6** | **Security, Testing & Containerization** | Docker Compose, Vitest/JUnit tests, CI/CD | **REMAINING (0%)** |
+| **Phase 0** | **Main Shell & UI Layout** | Angular 21, Signals, Editorial CSS tokens | **COMPLETED (100%)** ✅ |
+| **Phase 1** | **Design System & Interaction Polish** | Clickable tags, Explore trending rail, safe insets | **COMPLETED (100%)** ✅ |
+| **Phase 2** | **Backend & Database Architecture** | Spring Boot 3, PostgreSQL, Flyway, JPA | **COMPLETED (100%)** ✅ |
+| **Phase 3** | **Authentication & Story Management** | Spring Security 6, JWT, BCrypt, ML Anti-doxxing | **COMPLETED (100%)** ✅ |
+| **Phase 4** | **Reactions & Discovery Engine** | Reaction toggle persistence, full-text search | **COMPLETED (100%)** ✅ |
+| **Phase 5** | **Reporting & Moderation Workbench** | Admin queue, audit logs, safety reports, appeals | **COMPLETED (100%)** ✅ |
+| **Phase 6** | **Security, CI/CD & Mobile Release** | Docker Compose, 42/42 E2E Tests, GitHub CD | **COMPLETED (100%)** ✅ |
 
 ---
 
-## 🔍 Detailed Breakdown of Remaining Work by Phase
+## 🚀 What Remains: Operational & Launch Checklist
 
----
+With the entire codebase fully written, tested, containerized, and published to GitHub, only **4 operational real-world steps** remain:
 
-### 🎨 Phase 1 — Finalize Design System & Frontend Interactions
-*Focus: Complete client-side interaction refinement before backend integration.*
+### 1. 🌐 Public Cloud Backend Hosting (For Real Mobile Users)
+- **Current State**: The Spring Boot backend and PostgreSQL database are running locally on your laptop (`localhost:8080`).
+- **What's Needed**: For users anywhere on mobile data or outside your local Wi-Fi to use the app, the backend needs to be hosted on a cloud platform with a public HTTPS URL (e.g., Render, Railway, fly.io, or AWS).
+- **How to Deploy**: Since we created `backend/Dockerfile` and `docker-compose.yml`, you can connect your GitHub repository directly to [Render](https://render.com) or [Railway](https://railway.app) for free/low-cost automated hosting with PostgreSQL.
 
-#### ✅ Completed in Phase 1:
-- [x] Complete editorial visual identity (warm paper aesthetic, serif headlines, ivory canvas).
-- [x] Persistent responsive navigation sidebar with smooth hover expansion.
-- [x] Three emotional pillars (`lived`, `imagined`, `unsaid`) and category taxonomy.
-- [x] Dedicated interactive Tag Chip Input (<kbd>Enter</kbd> / comma chip generation, backspace removal).
-- [x] Two-tap Instagram-style saved collections modal & collection customization (name/icon).
-- [x] Full-page writer (`/share`) and floating confession modal (`CreateModalComponent`).
-- [x] User profile with email authentication forms, avatar photo view/remove modal.
-- [x] Removed obsolete academic batch fields and manual pending moderation review blockers.
-- [x] **Clickable Hashtag Navigation**: Connected `#tag` chips on `StoryCardComponent` and `StoryDetailComponent` to filter the `/explore` feed automatically via URL query parameter `/explore?tag=...`.
-- [x] **Explore Trending Tag Rail**: Dynamic tag rail in Explore bound to frequency signals.
-- [x] **Direct Link Sharing**: Replaced canvas cards with native mobile Web Share and clipboard link copy.
-- [x] **Frontend Accessibility & Interaction Polish**: Added global accessible `:focus-visible` focus rings, ARIA labels, and keyboard accessibility.
+### 2. 📱 Physical Phone Verification
+- **Action**: Copy the new [TheCollegeLife.apk](file:///c:/Users/KIIT/Desktop/THE%20COLLEGE%20LIFE%20WE%20DIDN%27T%20HAVE/TheCollegeLife.apk) (3.75 MB) to your Realme 12x 5G phone.
+- **Verification Checklist**:
+  - [ ] App icon renders cleanly on Android home screen.
+  - [ ] Status bar notch/clock does not overlap top header (46px clearance verified).
+  - [ ] First launch opens the Join Archive registration screen with the pen-name dice roller.
 
----
+### 3. 🔑 Key Rotation (Security Hygiene)
+- **Action**: Revoke and regenerate the Brevo email API key, Brevo SMTP password, and Google Gemini API key in their respective provider dashboards before opening to real public users.
 
-### ⚙️ Phase 2 — Backend & Database Architecture
-*Focus: Build the persistent server foundation using Spring Boot and PostgreSQL as specified in the original blueprint.*
-
-#### ✅ Completed in Phase 2:
-- [x] **Spring Boot 3 Project Setup**:
-  - Initialized Java 20 / Spring Boot 3.2.5 backend application in `/backend` with Maven.
-  - Multi-profile configuration (`application-dev.yml` with file-backed H2 at `./data/collegelife_db` and `application-prod.yml` with PostgreSQL via environment variables).
-  - CORS configuration enabling `http://localhost:4200` with credential support.
-- [x] **Relational Database Schema & Migrations (`V1__init.sql`)**:
-  - `users`, `stories`, `reactions`, `collections`, `collection_stories`, `reports`, `moderation_actions` with indexes and foreign keys.
-- [x] **JPA Entities & Spring Data Repositories**:
-  - Entities: `User`, `Story`, `Pillar`, `Reaction`, `ReactionType`, `Collection`, `Report`, `ModerationAction`.
-  - Repositories: `StoryRepository`, `ReactionRepository`, `CollectionRepository`, `ReportRepository`, `UserRepository`.
-  - Custom JPQL queries for filtered stories, category queries, and dynamic tag frequency aggregation (`findTagFrequencies`).
-- [x] **REST API Layer & RFC 7807 Exception Handling**:
-  - `StoryController` (`GET /api/stories`, `GET /api/stories/{id}`, `POST /api/stories`, `GET /api/stories/trending-tags`, `GET /api/stories/stats`).
-  - `ReactionController` (`GET /api/stories/{id}/reactions`, `POST /api/stories/{id}/reactions` with toggle behavior).
-  - `CollectionController` (`GET /api/collections`, `POST /api/collections`, `POST /api/collections/{id}/stories/{storyId}`, `DELETE /api/collections/{id}/stories/{storyId}`).
-  - `ReportController` (`POST /api/stories/{id}/reports`).
-  - RFC 7807 `@ControllerAdvice` global exception handling returning structured `ProblemDetail` errors.
-- [x] **Frontend Integration & Live Data Flow**:
-  - Angular `StoryService` wired to backend REST API via `provideHttpClient()`.
-  - Optimistic UI updates with resilient fallback handling.
-- [x] **Zero-Error Verification**:
-  - Maven build passing cleanly: `the-college-life-backend-1.0.0-SNAPSHOT.jar` generated.
-  - Angular production build passing cleanly (`npm run build`).
-
----
-
-
-### 🔐 Phase 3 — Authentication & Story Lifecycle Management
-*Focus: Secure user identity, pseudonym isolation, server-side story management, and automated ML ingestion.*
-
-#### ⏳ Remaining Tasks:
-- [ ] **Authentication Engine**:
-  - Spring Security integration with JWT (or secure HTTP-only cookies).
-  - Password hashing with BCrypt.
-  - Endpoints: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`.
-- [ ] **Privacy & Pseudonym Isolation (Requirement 5 & 9)**:
-  - Enforce server-side separation: Public endpoints must **never** return user email addresses, real IDs, or private data.
-  - Backend pen-name generator ensuring pseudonyms remain unique and consistent for authors.
-- [ ] **Story Lifecycle & Ownership Controls**:
-  - Story creation endpoint with server-side validation.
-  - Story editing and deletion restricted exclusively to the original author (or admin).
-  - Draft/rejected story isolation: Unapproved content must never be accessible via public queries.
-- [ ] **Automated ML Moderation / Ingestion (As Specified)**:
-  - Automated screening on story submission before publishing.
-  - Automated Toxicity & Hate Speech filter (auto-rejects abusive content).
-  - Automated Anti-Doxxing filter: regex and NLP detection for phone numbers, roll numbers, hostel room numbers, or real full names.
-  - Automatic pillar classification (*The Life I Actually Lived*, *The Life I Imagined*, *Things I Never Said*).
-
----
-
-### 🔍 Phase 4 — Reactions & Discovery Engine
-*Focus: Scalable engagement, full-text search, and multi-criteria exploration.*
-
-#### ⏳ Remaining Tasks:
-- [ ] **Reaction Engine**:
-  - Endpoints: `POST /api/stories/{id}/reactions`, `DELETE /api/stories/{id}/reactions`.
-  - Atomic counter updates and duplicate reaction prevention (one reaction per user per story, or togglable reactions).
-  - Reaction summary aggregations on story fetch.
-- [ ] **Discovery & Full-Text Search**:
-  - Full-text search endpoint querying story titles, narratives, and tags (`GET /api/stories?search=...`).
-  - Filter by emotional pillar (`pillar=lived`) and category slug.
-  - Sorting strategies:
-    - **Latest**: Ordered by `createdAt DESC`.
-    - **Popular**: Weighted score calculated from total reactions (`relatable * 2 + feltThis * 2 + support + laugh`).
-- [ ] **Pagination & Performance**:
-  - Keyset / Cursor or Pageable pagination (`page`, `size`) with total element counts.
-- [ ] **Rate Limiting (Requirement 9)**:
-  - Rate limiting on story creation, reactions, and reports (Bucket4j / Redis token bucket) to prevent spam.
-
----
-
-### 🛡️ Phase 5 — Reporting & Moderation Workbench
-*Focus: Community trust & safety, report lifecycle, and admin oversight.*
-
-#### ⏳ Remaining Tasks:
-- [ ] **Community Reporting API**:
-  - Endpoint: `POST /api/stories/{id}/reports`.
-  - Validated report reasons: Harassment, Real Personal Information / Doxxing, Hate Speech, Spam, Other.
-- [ ] **Restricted Admin Authentication**:
-  - Role-based authorization (`@PreAuthorize("hasRole('ADMIN')")`).
-  - Backend enforcement: `/api/admin/**` protected against non-admin tokens.
-- [ ] **Moderation Queue & Resolution Workflow**:
-  - `GET /api/admin/reports` with queue filtering (`pending`, `reviewed`, `dismissed`).
-  - `POST /api/admin/reports/{id}/resolve` (Actions: Dismiss report, Hide story, Permanently delete story, Suspend author).
-- [ ] **Audit Trail**:
-  - Record every moderator action into `ModerationAction` table with timestamp and moderator ID.
-
----
-
-### 🚀 Phase 6 — Security, Testing & Deployment Readiness
-*Focus: Hardening, comprehensive test suites, Docker containers, and CI/CD pipelines.*
-
-#### ✅ Completed in Phase 6:
-- [x] **Security Auditing & Hardening**:
-  - Full-spectrum pre-GitHub security audit completed (OWASP MASVS, ASVS, OWASP API Top 10).
-  - IDOR eliminated across all controllers (no spoofable `X-User-Id`).
-  - Actuator locked down, clickjacking frame options set, 500 error disclosures sanitized.
-  - Android network security configuration enforced (TLS in production, dev cleartext restricted).
-  - All hardcoded production credentials eradicated from configuration files.
-- [x] **Automated Testing Suite**:
-  - 42-step end-to-end integration verification suite (`test-e2e.cjs`) passing 100% against live backend.
-  - Angular production build verification (`npm run build`) passing 100%.
-  - Gradle test & assembly (`assembleDebug`) passing 100% across all 299 actionable tasks.
-- [x] **Multi-Stage Containerization**:
-  - `backend/Dockerfile`: Multi-stage build with Maven 3.9 and Eclipse Temurin 21 JRE runtime (non-root user).
-  - `frontend/Dockerfile`: Multi-stage build with Node 20 and Nginx Alpine static web server.
-  - `frontend/nginx.conf`: Production Nginx config with SPA HTML5 routing and DevSecOps security headers.
-  - `docker-compose.yml`: Full stack orchestration linking `postgres:16`, `backend:8080`, and `frontend:80`.
-- [x] **CI/CD Automation**:
-  - GitHub Actions workflow (`.github/workflows/ci.yml`) automatically compiling and testing Spring Boot, Angular, and Android on every push and pull request.
-
----
-
-## 📱 Additional Mobile Delivery (From User Request)
-
-- [ ] **PWA / Installable Phone App**:
-  - Web App Manifest (`manifest.webmanifest`) with icons (192px, 512px).
-  - Offline asset caching via Service Worker.
-  - Native "Install App" prompt on mobile devices.
-  - (Optional) Capacitor mobile build for Google Play Store packaging.
-
----
-
-## 📌 Next Action Plan (How to Proceed)
-
-1. **Option A (Complete Phase 1 Polish)**:
-   - Connect clickable `#tag` chips directly to `/explore?tag=...` navigation and add the 9:16 quote card generator.
-2. **Option B (Initialize Phase 2 Backend)**:
-   - Scaffold the Spring Boot 3 + PostgreSQL backend in a `/backend` directory, define the JPA entities, and start building the REST API.
+### 4. 🏪 Google Play Store Submission (Optional)
+- **Status**: Android App Bundle (`app-release.aab`) is pre-compiled and signed.
+- **When You Decide to Pay the $25 Fee**:
+  1. Register Google Play Developer account at `play.google.com/console`.
+  2. Create App Listing with app icon (512x512) and screenshots.
+  3. Upload `app-release.aab` and submit for Google review (2-5 business days).
