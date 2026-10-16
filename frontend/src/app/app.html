@@ -1,6 +1,8 @@
-<div class="app-layout">
-  <app-sidebar></app-sidebar>
-  <div class="app-content-wrapper">
+<div class="app-layout" [class.auth-layout]="isAuthRoute()">
+  @if (!isAuthRoute()) {
+    <app-sidebar></app-sidebar>
+  }
+  <div class="app-content-wrapper" [class.no-sidebar]="isAuthRoute()">
     <main class="site-main">
       <router-outlet></router-outlet>
     </main>
@@ -8,4 +10,6 @@
 </div>
 
 <!-- Global Spill a Story Popover Modal -->
-<app-create-modal></app-create-modal>
+@if (!isAuthRoute()) {
+  <app-create-modal></app-create-modal>
+}

@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { CreateModalComponent } from './components/create-modal/create-modal.component';
 import { Capacitor } from '@capacitor/core';
@@ -13,6 +14,25 @@ import { StatusBar, Style } from '@capacitor/status-bar';
   styleUrl: './app.css'
 })
 export class App implements OnInit {
+  private router = inject(Router);
+  readonly isAuthRoute = signal(false);
+
+  constructor() {
+    this.checkAuthRoute(this.router.url);
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.checkAuthRoute(event.urlAfterRedirects || event.url);
+      });
+  }
+
+  private checkAuthRoute(url: string): void {
+    if (!url) return;
+    const cleanUrl = url.split('?')[0].split('#')[0];
+    const authRoutes = ['/register', '/login', '/forgot-password'];
+    this.isAuthRoute.set(authRoutes.some(route => cleanUrl === route || cleanUrl.startsWith(`${route}/`)));
+  }
+
   async ngOnInit(): Promise<void> {
     if (Capacitor.isNativePlatform()) {
       try {

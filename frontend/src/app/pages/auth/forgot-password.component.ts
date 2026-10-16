@@ -499,8 +499,8 @@ type ResetStep = 'email' | 'otp' | 'password' | 'success';
 
     @media (max-width: 480px) {
       .auth-page {
-        padding: 20px 14px calc(72px + env(safe-area-inset-bottom, 0px));
-        min-height: calc(100vh - 72px);
+        padding: 16px 14px calc(24px + env(safe-area-inset-bottom, 0px));
+        min-height: calc(100vh - max(env(safe-area-inset-top, 0px), 38px) - 8px);
       }
       .auth-card {
         padding: 22px 16px;
