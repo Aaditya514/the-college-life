@@ -63,6 +63,18 @@ jobs:
           cp backend/target/*.jar ./TheCollegeLife-backend-${{ steps.get_version.outputs.TAG }}.jar
 
       # ------------------------------------------------------------------------
+      # Set up Android Build Environment (JDK 17)
+      # ------------------------------------------------------------------------
+      - name: Set up JDK 17 (Android Build)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x frontend/android/gradlew
+
+      # ------------------------------------------------------------------------
       # Build Frontend & Sync Capacitor
       # ------------------------------------------------------------------------
       - name: Set up Node.js 20
@@ -85,14 +97,8 @@ jobs:
         run: npx cap sync android
 
       # ------------------------------------------------------------------------
-      # Build Android Release APK and Google Play AAB Bundle (JDK 17)
+      # Build Android Release APK and Google Play AAB Bundle
       # ------------------------------------------------------------------------
-      - name: Set up JDK 17 (Android Build)
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
@@ -112,9 +118,7 @@ jobs:
 
       - name: Build Android Release APK & AAB
         working-directory: frontend/android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease bundleRelease --no-daemon
+        run: ./gradlew assembleRelease bundleRelease --no-daemon
 
       - name: Prepare Android Binaries
         run: |
