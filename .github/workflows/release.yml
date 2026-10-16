@@ -71,13 +71,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Accept Android SDK Licenses & Install Android 36 SDK and Tools
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          SDK_DIR="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          yes | $SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          $SDK_DIR/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-levels: '36'
+          build-tools: '36.0.0'
+          cmdline-tools: '9.0'
+          components: 'platform-tools'
+          accept-licenses: true
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x frontend/android/gradlew
