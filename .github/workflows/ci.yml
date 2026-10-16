@@ -73,10 +73,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Accept Android SDK Licenses & Install Android 36 SDK
+      - name: Accept Android SDK Licenses & Install Android 36 SDK and Tools
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" || true
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          SDK_DIR="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          yes | $SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $SDK_DIR/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x frontend/android/gradlew
@@ -108,7 +111,7 @@ jobs:
       - name: Run Android Assemble Debug APK
         working-directory: frontend/android
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle_ci.log || {
+          ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee /tmp/gradle_ci.log || {
             echo "### ❌ Gradle CI Error" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
             tail -n 100 /tmp/gradle_ci.log >> $GITHUB_STEP_SUMMARY

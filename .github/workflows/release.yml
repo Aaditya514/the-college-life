@@ -71,10 +71,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Accept Android SDK Licenses & Install Android 36 SDK
+      - name: Accept Android SDK Licenses & Install Android 36 SDK and Tools
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" || true
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          SDK_DIR="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          yes | $SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $SDK_DIR/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x frontend/android/gradlew
@@ -120,16 +123,21 @@ jobs:
             echo "KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
             echo "KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
           else
-            echo "No custom keystore secret configured; Gradle will use debug-signing fallback for direct installability."
+            echo "No custom production keystore secret configured; generating dedicated fallback release keystore with keytool..."
+            keytool -genkey -v -keystore ${{ runner.temp }}/release.jks -alias thecollegelife -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=TheCollegeLife, OU=Mobile, O=TheCollegeLife, L=Campus, S=State, C=IN"
+            echo "KEYSTORE_PATH=${{ runner.temp }}/release.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
+            echo "KEY_ALIAS=thecollegelife" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=android" >> $GITHUB_ENV
           fi
 
       - name: Build Android Release APK & AAB
         working-directory: frontend/android
         run: |
-          ./gradlew assembleRelease bundleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle_rel.log || {
+          ./gradlew assembleRelease bundleRelease --no-daemon --stacktrace --info 2>&1 | tee /tmp/gradle_rel.log || {
             echo "### ❌ Gradle Release Error" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -n 100 /tmp/gradle_rel.log >> $GITHUB_STEP_SUMMARY
+            tail -n 120 /tmp/gradle_rel.log >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
             exit 1
           }
