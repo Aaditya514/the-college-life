@@ -1,4 +1,4 @@
-import { Component, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, signal, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -497,10 +497,22 @@ import { AuthService } from '../../services/auth.service';
     }
   `]
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+
+  ngOnInit(): void {
+    try {
+      document.body.classList.add('auth-screen-mode');
+    } catch {}
+  }
+
+  ngOnDestroy(): void {
+    try {
+      document.body.classList.remove('auth-screen-mode');
+    } catch {}
+  }
 
   pseudonym = '';
   email = '';

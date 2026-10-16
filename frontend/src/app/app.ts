@@ -26,11 +26,15 @@ export class App implements OnInit {
       });
   }
 
-  private checkAuthRoute(url: string): void {
-    if (!url) return;
-    const cleanUrl = url.split('?')[0].split('#')[0];
-    const authRoutes = ['/register', '/login', '/forgot-password'];
-    this.isAuthRoute.set(authRoutes.some(route => cleanUrl === route || cleanUrl.startsWith(`${route}/`)));
+  private checkAuthRoute(url?: string): void {
+    const raw = (url || '').toLowerCase();
+    let path = '';
+    try {
+      path = (window.location.pathname || '').toLowerCase();
+    } catch {}
+    const combined = `${raw} ${path}`;
+    const isAuth = combined.includes('register') || combined.includes('login') || combined.includes('forgot-password');
+    this.isAuthRoute.set(isAuth);
   }
 
   async ngOnInit(): Promise<void> {

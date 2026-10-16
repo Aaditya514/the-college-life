@@ -115,18 +115,19 @@ export class AuthService {
           pseudonym: userDto.pseudonym,
           avatarUrl: userDto.avatarUrl || '',
           avatarEmoji: '☕',
-          bio: 'Alumni recollecting chapters that never made it to yearbooks.',
+          bio: userDto.bio || this.currentUser()?.bio || 'Alumni recollecting chapters that never made it to yearbooks.',
           joinedAt: userDto.createdAt ? new Date(userDto.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently',
           role: userDto.role
         };
         this.currentUser.set(profile);
         this.persistSession(profile);
-      } else {
+      }
+    } catch (err: any) {
+      // ONLY log out if the backend explicitly reports 401 Unauthorized or 403 Forbidden.
+      // Never wipe the user's session on network disconnect (status 0), cold-start latency, or 5xx gateway errors!
+      if (err && (err.status === 401 || err.status === 403)) {
         this.logout();
       }
-    } catch {
-      // Token is invalid/expired or user was deleted from DB
-      this.logout();
     }
   }
 

@@ -33,6 +33,8 @@ services:
         sync: false
       - key: APP_CORS_ALLOWED_ORIGINS
         value: "https://the-college-life-web.onrender.com,http://localhost:4200,capacitor://localhost"
+      - key: APP_JWT_SECRET
+        value: "TheCollegeLifeSecretJwtSigningKey2026Secure256BitTokenArchiveVaultMustBeLong"
       - key: SEED_DATA
         value: "true"
 

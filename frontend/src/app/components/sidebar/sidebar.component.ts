@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs';
 import { StoryService } from '../../services/story.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
@@ -10,12 +11,13 @@ import { ThemeService } from '../../services/theme.service';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <!-- Desktop Left Collapsible Icon Dock (Expands on Hover, Closes on Mouse Leave) -->
-    <aside 
-      class="sidebar-dock" 
-      [class.is-expanded]="isExpanded"
-      (mouseenter)="onMouseEnter()" 
-      (mouseleave)="onMouseLeave()">
+    @if (!isAuthRoute()) {
+      <!-- Desktop Left Collapsible Icon Dock (Expands on Hover, Closes on Mouse Leave) -->
+      <aside 
+        class="sidebar-dock" 
+        [class.is-expanded]="isExpanded"
+        (mouseenter)="onMouseEnter()" 
+        (mouseleave)="onMouseLeave()">
       
       <!-- Brand Top -->
       <div class="sidebar-top">
@@ -228,6 +230,7 @@ import { ThemeService } from '../../services/theme.service';
         </a>
       }
     </nav>
+  }
   `,
   styles: [`
     /* Desktop Collapsible Icon Dock (Resting at 72px, Expands to 245px on Hover) */
@@ -665,7 +668,30 @@ export class SidebarComponent {
   storyService = inject(StoryService);
   authService = inject(AuthService);
   themeService = inject(ThemeService);
+  private router = inject(Router);
+  readonly isAuthRoute = signal(false);
   isExpanded = false;
+
+  constructor() {
+    this.updateAuthRoute(this.router.url);
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.updateAuthRoute(event.urlAfterRedirects || event.url);
+      });
+  }
+
+  private updateAuthRoute(url?: string): void {
+    const raw = (url || '').toLowerCase();
+    let path = '';
+    try {
+      path = (window.location.pathname || '').toLowerCase();
+    } catch {}
+    const combined = `${raw} ${path}`;
+    this.isAuthRoute.set(
+      combined.includes('register') || combined.includes('login') || combined.includes('forgot-password')
+    );
+  }
 
   onMouseEnter(): void {
     this.isExpanded = true;

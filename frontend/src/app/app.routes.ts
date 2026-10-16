@@ -40,6 +40,19 @@ export const initialLaunchGuard: CanActivateFn = () => {
   return router.createUrlTree(['/register']);
 };
 
+/**
+ * Prevents already-registered / logged-in users from seeing the register or login screens
+ */
+export const unauthOnlyGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isLoggedIn()) {
+    return router.createUrlTree(['/']);
+  }
+  return true;
+};
+
 export const routes: Routes = [
   { path: '', component: HomeComponent, canActivate: [initialLaunchGuard], title: 'The College Life We Didn\'t Have — An Anonymous Memory Vault' },
   { path: 'feed', component: HomeComponent, title: 'The College Life We Didn\'t Have — An Anonymous Memory Vault' },
@@ -47,8 +60,8 @@ export const routes: Routes = [
   { path: 'stories/:id', component: StoryDetailComponent, title: 'Story Reading — The College Life' },
   { path: 'share', component: ShareComponent, title: 'Tell Your Story — The College Life' },
   { path: 'categories/:slug', component: CategoryComponent, title: 'Archive Chapter — The College Life' },
-  { path: 'login', component: LoginComponent, title: 'Sign In — The College Life' },
-  { path: 'register', component: RegisterComponent, title: 'Join Archive — The College Life' },
+  { path: 'login', component: LoginComponent, canActivate: [unauthOnlyGuard], title: 'Sign In — The College Life' },
+  { path: 'register', component: RegisterComponent, canActivate: [unauthOnlyGuard], title: 'Join Archive — The College Life' },
   { path: 'forgot-password', component: ForgotPasswordComponent, title: 'Reset Password — The College Life' },
   { path: 'profile', component: ProfileComponent, title: 'Author Profile — The College Life' },
   { path: 'profile/:handle', component: ProfileComponent, title: 'Author Profile — The College Life' },

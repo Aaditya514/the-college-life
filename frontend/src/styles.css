@@ -551,3 +551,26 @@ button, input, textarea, select {
     font-size: clamp(1.5rem, 5vw, 2rem);
   }
 }
+
+/* Ensure mobile bottom navigation dock and sidebar NEVER appear on auth screens */
+body:has(.auth-page) .mobile-bottom-dock,
+body:has(.auth-card) .mobile-bottom-dock,
+body:has(.auth-page) .sidebar-dock,
+body:has(.auth-card) .sidebar-dock,
+body.auth-screen-mode .mobile-bottom-dock,
+body.auth-screen-mode .sidebar-dock,
+body.auth-screen-mode app-sidebar,
+.app-layout.auth-layout .mobile-bottom-dock,
+.app-layout.auth-layout .sidebar-dock,
+.app-layout.auth-layout app-sidebar {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
