@@ -74,11 +74,8 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-levels: '36'
-          build-tools: '36.0.0'
-          cmdline-tools: '9.0'
-          components: 'platform-tools'
-          accept-licenses: true
+          packages: 'platforms;android-36 platform-tools'
+          accept-android-sdk-licenses: true
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x frontend/android/gradlew
