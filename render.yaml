@@ -1,0 +1,61 @@
+services:
+  # ----------------------------------------------------------------------------
+  # Backend API Service (Spring Boot 3 + Java 21)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: the-college-life-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    healthCheckPath: /api/stories/stats
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: collegelife-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: collegelife-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: collegelife-db
+          property: password
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: BREVO_API_KEY
+        sync: false
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: "https://the-college-life-web.onrender.com,http://localhost:4200,capacitor://localhost"
+      - key: SEED_DATA
+        value: "true"
+
+  # ----------------------------------------------------------------------------
+  # Frontend Web Service (Angular 21 + Nginx)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: the-college-life-web
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 80
+
+databases:
+  # ----------------------------------------------------------------------------
+  # Managed PostgreSQL Database
+  # ----------------------------------------------------------------------------
+  - name: collegelife-db
+    databaseName: collegelife_db
+    user: collegelife_user
+    plan: free
+    region: oregon
