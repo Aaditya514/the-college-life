@@ -125,7 +125,14 @@ jobs:
 
       - name: Build Android Release APK & AAB
         working-directory: frontend/android
-        run: ./gradlew assembleRelease bundleRelease --no-daemon
+        run: |
+          ./gradlew assembleRelease bundleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle_rel.log || {
+            echo "### ❌ Gradle Release Error" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 100 /tmp/gradle_rel.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
 
       - name: Prepare Android Binaries
         run: |
