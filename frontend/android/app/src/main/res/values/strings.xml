@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">The College Life We Didn\'t Have</string>
+    <string name="title_activity_main">The College Life We Didn\'t Have</string>
+    <string name="package_name">com.thecollegelife.app</string>
+    <string name="custom_url_scheme">com.thecollegelife.app</string>
+</resources>

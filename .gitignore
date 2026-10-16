@@ -1,0 +1,107 @@
+# ==============================================================================
+# Root .gitignore for The College Life We Didn't Have
+# Covers: Angular Frontend, Spring Boot Backend, Android Mobile (Capacitor)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Secrets, Credentials & Local Environments (CRITICAL FOR GITHUB PUSH)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.env
+application-local.yml
+src/main/resources/application-local.yml
+
+# Android & Java Signing Keystores / Private Keys
+*.jks
+*.keystore
+*.p12
+*.key
+*.pem
+*.pk8
+signing.properties
+release-signing.properties
+
+# ------------------------------------------------------------------------------
+# Local Configuration & Machine-Specific Files
+# ------------------------------------------------------------------------------
+local.properties
+**/local.properties
+
+# ------------------------------------------------------------------------------
+# Binary & Media Files (Exclude bulky assets/recordings from repository)
+# ------------------------------------------------------------------------------
+*.apk
+*.aab
+*.aar
+*.mp4
+*.avi
+*.mov
+*.webm
+
+# ------------------------------------------------------------------------------
+# Spring Boot / Maven Build Outputs
+# ------------------------------------------------------------------------------
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+backend/data/
+*.db
+*.sqlite
+
+# ------------------------------------------------------------------------------
+# Angular / Node Frontend Outputs & Dependencies
+# ------------------------------------------------------------------------------
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.angular/cache
+**/.angular/cache
+.sass-cache/
+**/.sass-cache/
+tmp/
+**/tmp/
+out-tsc/
+**/out-tsc/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ------------------------------------------------------------------------------
+# Android / Gradle Build Outputs
+# ------------------------------------------------------------------------------
+.gradle/
+**/.gradle/
+build/
+**/build/
+bin/
+gen/
+out/
+captures/
+.externalNativeBuild/
+.cxx/
+proguard/
+
+# ------------------------------------------------------------------------------
+# IDE & System Files
+# ------------------------------------------------------------------------------
+.idea/
+**/.idea/
+*.iml
+**/*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+*.log
+Thumbs.db
+ehthumbs.db
+.DS_Store
+__screenshots__/

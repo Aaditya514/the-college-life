@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>The College Life We Didn't Have — An Anonymous Memory Vault</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FAF8F5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="An anonymous storytelling community for college students and graduates. Regrets, missed moments, silent crushes, and the college life we actually lived.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Immediate Theme Pre-hydration to eliminate flash of wrong theme -->
+  <script>
+    (function() {
+      try {
+        var stored = localStorage.getItem('collegelife_theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+        var metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+          metaTheme.setAttribute('content', theme === 'dark' ? '#0B0F14' : '#FAF8F5');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Rich Social Preview Meta Tags (Open Graph & Twitter) -->
+  <meta property="og:site_name" content="The College Life We Didn't Have">
+  <meta property="og:title" content="The College Life We Didn't Have — Anonymous Campus Memories">
+  <meta property="og:description" content="Things we regret. Moments we missed. Stories we never told. An anonymous storytelling vault for college students and graduates.">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="The College Life We Didn't Have">
+  <meta name="twitter:description" content="Things we regret. Moments we missed. Stories we never told. An anonymous storytelling vault.">
+
+  <!-- Editorial Typography: Newsreader (Serif) & Plus Jakarta Sans (Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

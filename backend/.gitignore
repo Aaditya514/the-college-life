@@ -1,0 +1,18 @@
+# Build artifacts
+target/
+*.class
+
+# Environment and local configurations (credentials)
+.env
+.env.local
+src/main/resources/application-local.yml
+
+# Database and local files
+data/
+*.db
+
+# IDE & Editor
+.idea/
+*.iml
+.vscode/
+*.log
