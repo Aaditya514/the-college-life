@@ -216,7 +216,14 @@ export class AuthService {
       }
       return { success: false, error: 'Registration failed.' };
     } catch (err: any) {
-      const message = err.error?.message || 'Registration failed. Email or pseudonym may already be in use.';
+      let message = 'Registration failed. Please check your network connection and try again.';
+      if (err.error?.message) {
+        message = err.error.message;
+      } else if (err.status === 400 || err.status === 409) {
+        message = 'Registration failed. Email or pen name may already be in use.';
+      } else if (err.status === 0) {
+        message = 'Unable to reach server. Please check your internet connection.';
+      }
       return { success: false, error: message };
     }
   }
