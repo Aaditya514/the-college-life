@@ -1,0 +1,166 @@
+name: Release & Distribution CD
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      release_title:
+        description: 'Release Title'
+        required: false
+        default: 'The College Life We Didn'\''t Have - Mobile & Web Release'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-artifacts:
+    name: Build & Package Release Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
+          echo "TAG=${TAG}" >> $GITHUB_OUTPUT
+
+      # ------------------------------------------------------------------------
+      # Set up Java & Node Runtimes
+      # ------------------------------------------------------------------------
+      - name: Set up JDK 17 (Android Build)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up JDK 21 (Spring Boot Backend)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # ------------------------------------------------------------------------
+      # Build Spring Boot Backend JAR
+      # ------------------------------------------------------------------------
+      - name: Build Backend Service (Spring Boot 3)
+        working-directory: backend
+        run: mvn clean package -DskipTests -B
+
+      - name: Prepare Backend Binary
+        run: |
+          cp backend/target/*.jar ./TheCollegeLife-backend-${{ steps.get_version.outputs.TAG }}.jar
+
+      # ------------------------------------------------------------------------
+      # Build Frontend & Sync Capacitor
+      # ------------------------------------------------------------------------
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build Angular Production Distribution
+        working-directory: frontend
+        run: npm run build
+
+      - name: Sync Capacitor Android Project
+        working-directory: frontend
+        run: npx cap sync android
+
+      # ------------------------------------------------------------------------
+      # Build Android Release APK and Google Play AAB Bundle
+      # ------------------------------------------------------------------------
+      - name: Setup Keystore (Optional Secrets or Fallback)
+        id: setup_keystore
+        run: |
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Using production signing keystore from GitHub Secrets"
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > ${{ runner.temp }}/release.jks
+            echo "KEYSTORE_PATH=${{ runner.temp }}/release.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+          else
+            echo "No custom keystore secret configured; Gradle will use debug-signing fallback for direct installability."
+          fi
+
+      - name: Build Android Release APK & AAB
+        working-directory: frontend/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease bundleRelease --no-daemon
+
+      - name: Prepare Android Binaries
+        run: |
+          cp frontend/android/app/build/outputs/apk/release/app-release.apk ./TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk
+          cp frontend/android/app/build/outputs/bundle/release/app-release.aab ./TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab
+          sha256sum ./TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk > SHA256SUMS.txt
+          sha256sum ./TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab >> SHA256SUMS.txt
+          sha256sum ./TheCollegeLife-backend-${{ steps.get_version.outputs.TAG }}.jar >> SHA256SUMS.txt
+
+      # ------------------------------------------------------------------------
+      # Publish GitHub Release
+      # ------------------------------------------------------------------------
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.TAG }}
+          name: ${{ github.event.inputs.release_title || steps.get_version.outputs.TAG }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## 🎓 The College Life We Didn't Have — Release ${{ steps.get_version.outputs.TAG }}
+
+            ### 📱 Android Installation (Free & Direct)
+            1. Download **`TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk`** directly to your Android device.
+            2. Tap the downloaded `.apk` file and select **Install** (allow *Install from Unknown Sources* if prompted).
+            3. Enjoy full offline & online campus storytelling, confessions, emotional pillars, and Instagram-style collections.
+
+            ### 🏪 Google Play Store Deployment (AAB)
+            - **`TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab`** is pre-bundled and validated for Google Play Console upload when your Play Developer account is active.
+
+            ### 💻 Backend Microservice
+            - **`TheCollegeLife-backend-${{ steps.get_version.outputs.TAG }}.jar`**: Standalone Spring Boot executable with Flyway migrations and PostgreSQL integration.
+
+            ### 🔒 Artifact Checksums (SHA-256)
+            ```
+            $(cat SHA256SUMS.txt)
+            ```
+          files: |
+            ./TheCollegeLife-${{ steps.get_version.outputs.TAG }}.apk
+            ./TheCollegeLife-PlayStore-${{ steps.get_version.outputs.TAG }}.aab
+            ./TheCollegeLife-backend-${{ steps.get_version.outputs.TAG }}.jar
+            ./SHA256SUMS.txt

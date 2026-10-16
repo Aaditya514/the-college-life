@@ -1,181 +1,154 @@
 # 🎓 The College Life We Didn't Have
 
-> *An anonymous, emotionally resonant storytelling platform for confessions, unsaid words, and the bittersweet reality of campus life.*
+> *An anonymous, emotionally resonant campus storytelling vault for confessions, unsaid words, and the bittersweet reality of university life.*
+
+[![Build Status](https://github.com/Aaditya514/the-college-life/actions/workflows/ci.yml/badge.svg)](https://github.com/Aaditya514/the-college-life/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/Aaditya514/the-college-life?color=brightgreen&label=Release)](https://github.com/Aaditya514/the-college-life/releases/latest)
+[![Download APK](https://img.shields.io/badge/Direct%20Download-Android%20APK%20(3.7%20MB)-success?style=for-the-badge&logo=android)](https://github.com/Aaditya514/the-college-life/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## 📌 Phase 0 — Core Architecture & Feature Milestones
+## 📱 Instant Download & Mobile Installation (100% Free)
 
-**Phase 0** establishes the foundational platform experience, responsive design, anonymous storytelling pipeline, editorial aesthetics, and Instagram-style collection curation.
+You can download and run the mobile app directly on any Android smartphone without waiting for store approval:
+
+1. 📥 **Download**: Click [**Download Latest APK**](https://github.com/Aaditya514/the-college-life/releases/latest) to get `TheCollegeLife-v1.0.0.apk` directly on your Android device (or download to PC and transfer via USB).
+2. ⚙️ **Install**: Open the downloaded `.apk` from your notification bar or file manager. When prompted by Android, tap **Settings** and enable **"Allow from this source"**.
+3. 🚀 **Launch**: Open **The College Life** from your app drawer. Experience instant anonymous pen-name generation, the emotional archive, and interactive Instagram-style memory collections.
+
+> **🏪 Google Play Store Note**: The production Android App Bundle (`TheCollegeLife-PlayStore-v1.0.0.aab`) is pre-compiled, optimized, and signed. It is ready for upload to Google Play Console whenever an active Google Play Developer account is registered.
+
+---
+
+## 🏛️ System Architecture
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        PHASE 0 ARCHITECTURE                            │
-├───────────────────┬────────────────────────────┬───────────────────────┤
-│  AUTH & IDENTITY  │     STORY ARCHIVE          │     CURATION & TAGS   │
-│  • Email-only     │  • 3 Emotional Pillars     │  • Tag Chip Input     │
-│  • Pseudonym Gen  │  • Automated Ingestion ML  │  • Instagram Saves    │
-│  • Avatar Modal   │  • Content Warnings        │  • Custom Collections │
-└───────────────────┴────────────────────────────┴───────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│                           THE COLLEGE LIFE WE DIDN'T HAVE                         │
+├─────────────────────────┬───────────────────────────────┬─────────────────────────┤
+│    MOBILE & WEB CLIENT  │        REST API BACKEND       │   DATA & ML PIPELINE    │
+│  • Angular 21 (Signals) │  • Spring Boot 3 (Java 20/21) │  • PostgreSQL 16        │
+│  • Capacitor Android    │  • Spring Security 6 + JWT    │  • Flyway Migrations    │
+│  • Safe-area inset pads │  • Rate Limiting (Bucket4j)   │  • Google Gemini AI     │
+│  • Instagram Saves      │  • OWASP ASVS Hardened        │  • Docker Multi-stage   │
+└─────────────────────────┴───────────────────────────────┴─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Key Features Implemented in Phase 0
+## ✨ Platform Highlights
 
-### 1. ✍️ Story Authoring & Interactive Tag Input
-- **Dual Writing Surfaces**:
-  - Full-page longform writer at `/share` with live reader preview.
-  - Quick popup modal (`Spill it out`) accessible from any page.
-- **Interactive Tag Chip System**:
-  - Dedicated tag entry below narrative canvas.
-  - Type tag keyword and press <kbd>Enter</kbd> or <kbd>,</kbd> to generate hashtag chips (e.g., `#hostel_chai`, `#placement_stress`).
-  - Supports up to 5 tags with quick `✕` chip removal and backspace deletion.
-  - Automatic commit of pending tag text upon clicking **"Post Anonymously"**.
-  - **Zero Content Mangling**: Narrative text remains 100% clean and intact without regex stripping or garbling.
-- **Pseudonym Generator**:
-  - Generates campus-native pen names with a single dice roll (e.g. `@terrace_poet_29`, `@chai_tapri_rebel`, `@convocation_dreamer_15`).
-- **Trigger Warnings**:
-  - Optional inline content notices for sensitive themes (burnout, mental health, placement anxiety).
+### 1. ✍️ Story Authoring & Zero-Mangling Tag Chips
+- **Dual Writing Modals**: Full-screen canvas (`/share`) and popup modal (`Spill it out`) with live preview.
+- **Interactive Tag Input**: Tag chips generated with <kbd>Enter</kbd> or <kbd>,</kbd> (e.g. `#hostel_chai`, `#placement_stress`, `#LT2_glance`).
+- **Pseudonym Dice Roller**: Roll randomized campus-native pen-names (e.g. `@terrace_poet_29`, `@chai_tapri_rebel`, `@convocation_dreamer_15`).
+- **Trigger Warnings**: Content warnings for sensitive themes (academic burnout, mental health, placement anxiety).
 
-### 2. 🏛️ Three Emotional Pillars & Taxonomy
-Stories are structured into three poignant categories reflecting the universal student condition:
-1. **The Life I Actually Lived**:
-   - The chaotic reality: hostel midnight chai, proxy attendance, bunked lectures, mess food banter, and exam panic.
-2. **The Life I Imagined**:
-   - The expectations vs. reality: pristine dreams of college versus the sudden chill of convocation and stepping into adulthood.
-3. **Things I Never Said**:
-   - The unspoken: LT-2 crushes, unreturned library glances, apologies to drifting friends, and unsent goodbyes.
+### 2. 🏛️ Three Emotional Pillars
+1. **The Life I Actually Lived**: The chaotic reality — midnight chai runs, 75% attendance panics, proxy lectures, mess food debates.
+2. **The Life I Imagined**: What was promised vs. what came to pass — convocation bittersweetness, freshman dreams, adulthood transition.
+3. **Things I Never Said**: The unspoken truths — library crushes, unsent apology notes, friendships that silently faded away.
 
-### 3. 🔖 Instagram-Style Collections & Bookmarking
-- **Two-Tap Saving Flow**:
-  - Clicking **Save** displays a sleek modal to pick an existing collection or create a new one.
-  - Clicking outside automatically saves directly into the master **"All Saved"** collection without interrupting reading.
-- **Collection Management**:
-  - `+ New Collection` button integrated into header for clean spacing.
-  - Collection personalization: edit collection names and assign custom icons directly in the collection view.
-  - Modal-based un-save confirmation retaining stories in the general saved archive.
+### 3. 🔖 Instagram-Style Collections
+- **Two-Tap Saving**: Save stories into personalized themed folders (e.g., "Late Night Chai Memories", "Campus Heartbreaks").
+- **Smart Fallback**: Clicking outside auto-saves directly to the master "All Saved" archive.
 
-### 4. 👤 Authentication & Profiles
-- **Streamlined Email Auth**:
-  - Simplified registration and login exclusively with email (no unnecessary phone number verification).
-  - Clean authentication pages with validation and responsive card layouts.
-- **Profile & Account Separation**:
-  - Distinct `/profile` route for account settings, email, and pen-name management.
-  - Distinct `/my-stories` route for author-specific story management and deletion.
-  - Ergonomic layout: Moved **Logout** away from "Write Story" to prevent accidental clicks.
-- **Avatar Management**:
-  - Full-screen photo view modal.
-  - Image upload and removal support.
-  - Removed outdated academic "Batch" fields across profile and story cards.
-
-### 5. 🛡️ Automated Content Ingestion & Moderation
-- **Streamlined Publication**:
-  - Removed legacy "pending review" queues and manual moderation holding blocks.
-  - Prepared for ML-based automated classification and sentiment analysis on ingestion.
-- **Community Safety**:
-  - In-app reporting modal allowing readers to flag inappropriate content with categorization (harassment, hate speech, spam, real personal info).
-
-### 6. 📱 Mobile-First Responsive Design
-- Crafted with modern editorial aesthetics:
-  - Custom typography (warm serif headings paired with clean sans body).
-  - Glassmorphic backdrops and micro-animations.
-  - Responsive layouts tailored for mobile phones, tablets, and desktops.
+### 4. 🛡️ Production Security & Automated Moderation
+- **OWASP ASVS / MASVS Hardened**: Cryptographically random HMAC-SHA256 JWT key rotation, stateless session management, sanitized SQL queries.
+- **Strict IDOR Protection**: Server enforces identity via authenticated JWT principal — preventing user ID spoofing.
+- **AI Anti-Doxxing & Moderation**: Integrated with Google Gemini API for real-time safety classification, toxicity detection, and PII protection.
+- **Defensive Android Styling**: 46px dynamic status-bar clearance with `max(env(safe-area-inset-top), 38px)` ensuring clean viewport clearance on Realme, Samsung, and Xiaomi camera cutouts.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology |
-|---|---|
-| **Framework** | Angular 21 (Standalone Components, Signals API) |
-| **State Management** | Angular Signals (`signal`, `computed`, `update`) |
-| **Styling** | Vanilla CSS Design System with CSS variables |
-| **Routing** | Angular Router (`app.routes.ts`) |
-| **Tooling** | Vite / Angular CLI build pipeline |
+| Layer | Technology | Key Capabilities |
+|---|---|---|
+| **Mobile App** | Capacitor 7 + Android SDK 35 | Native Android container, Haptic feedback, Status bar management |
+| **Web Frontend** | Angular 21, TypeScript, HTML5, Vanilla CSS | Standalone components, Signals state management, Glassmorphic UI |
+| **Backend API** | Spring Boot 3.4, Java 20/21 | Spring Data JPA, Spring Security, Flyway, Bucket4j rate limiting |
+| **Database** | PostgreSQL 16 | Relational schemas, indexing, cursor pagination, automated migrations |
+| **Containers** | Docker & Docker Compose | Multi-stage builder images, unprivileged runtime users |
+| **CI/CD** | GitHub Actions | Automated test runners, release builds, APK & AAB distribution |
 
 ---
 
-## 📂 Project Structure
+## 🚀 Running Locally
 
+### Option 1: One-Click Launch via Docker Compose (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/Aaditya514/the-college-life.git
+cd the-college-life
+
+# Copy environment variables template
+cp backend/.env.example backend/.env
+
+# Spin up Postgres, Spring Boot backend, and Angular frontend
+docker compose up --build -d
 ```
-THE COLLEGE LIFE WE DIDN'T HAVE/
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/
-│   │   │   │   ├── create-modal/     # Floating story creation modal
-│   │   │   │   ├── header/           # Navigation header
-│   │   │   │   ├── report-modal/     # Community safety reporting
-│   │   │   │   ├── save-modal/       # Instagram-style collections modal
-│   │   │   │   └── sidebar/          # Responsive navigation sidebar
-│   │   │   ├── models/
-│   │   │   │   └── story.model.ts    # TypeScript interfaces & types
-│   │   │   ├── pages/
-│   │   │   │   ├── auth/             # Login & Register views
-│   │   │   │   ├── collection-detail/# Specific saved collection view
-│   │   │   │   ├── home/             # Story feed & pillar tabs
-│   │   │   │   ├── my-stories/       # Author's published submissions
-│   │   │   │   ├── profile/          # User profile & avatar management
-│   │   │   │   ├── saved/            # Collections overview
-│   │   │   │   ├── share/            # Full-page story drafting canvas
-│   │   │   │   └── story-detail/     # Single story reading experience
-│   │   │   ├── services/
-│   │   │   │   ├── auth.service.ts   # User authentication & session state
-│   │   │   │   └── story.service.ts  # Story state, collections & reactions
-│   │   │   ├── app.routes.ts         # Application routing configuration
-│   │   │   └── app.component.ts      # Root shell
-│   │   ├── styles.css                # Global design system & typography tokens
-│   │   └── index.html                # App entrypoint
-│   ├── package.json
-│   └── angular.json
-└── README.md                         # Phase 0 Documentation
+- **Web App**: `http://localhost:80` (or `http://localhost:4200` in dev mode)
+- **Backend API**: `http://localhost:8080/api`
+- **Postgres DB**: `localhost:5432`
+
+---
+
+### Option 2: Run Services Individually
+
+#### 1. Start PostgreSQL
+```bash
+# Ensure PostgreSQL is running on port 5432 with database 'collegelife_db'
 ```
 
----
+#### 2. Start Spring Boot Backend
+```bash
+cd backend
+# Set environment variables from .env
+mvn spring-boot:run
+```
 
-## 🏃 Getting Started Locally
+#### 3. Start Angular Web Client
+```bash
+cd frontend
+npm install
+npm start
+# Available at http://localhost:4200
+```
 
-### Prerequisites
-- Node.js (v18+)
-- npm (v9+)
-
-### Installation & Run
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Launch development server:
-   ```bash
-   npm start
-   ```
-
-4. Open in browser:
-   ```
-   http://localhost:4200/
-   ```
+#### 4. Run Mobile App on Android Device
+```bash
+cd frontend
+npm run build
+npx cap sync android
+cd android
+./gradlew.bat assembleDebug
+# Generated APK: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+```
 
 ---
 
-## 🔮 Remaining Implementation & Deliverables
+## 🔄 Continuous Integration & Delivery (CI/CD)
 
-For the exhaustive specification aligned with the original blueprint prompt across all remaining engineering phases, see:
-- 📑 **[REMAINING.md](./REMAINING.md)** — Comprehensive breakdown of remaining tasks, JPA entities, APIs, ML ingestion, security controls, and tests (Phases 1 through 6).
-- 🗺️ **[ROADMAP.md](./ROADMAP.md)** — High-level milestone checklist and timeline.
+The repository includes two automated GitHub Actions workflows:
 
-### Summary of Remaining Phases:
-- **Phase 1 (In Progress)**: Clickable hashtag discovery, URL query routing, trending tag rail, and social quote card export.
-- **Phase 2 (Remaining)**: Spring Boot 3 REST API, PostgreSQL database, Flyway migrations, and JPA entities (`User`, `Story`, `Reaction`, `Collection`, `Report`).
-- **Phase 3 (Remaining)**: Spring Security + JWT authentication, pseudonym isolation, server-side story lifecycle, and automated ML moderation & anti-doxxing.
-- **Phase 4 (Remaining)**: Persistent atomic reactions, full-text search, weighted popular sorting, cursor pagination, and rate limiting.
-- **Phase 5 (Remaining)**: Reporting API, restricted admin moderation queue, resolution actions, and audit trail.
-- **Phase 6 (Remaining)**: Security hardening (XSS/CSRF/SQLi/IDOR), automated Vitest + JUnit test suites, Docker Compose multi-container setup, and GitHub Actions CI/CD.
+1. **`ci.yml` (Continuous Integration)**:
+   - Triggers on every `push` and `pull_request` to `main`.
+   - Runs backend unit & integration tests (`mvn clean test`).
+   - Builds Angular production bundle (`npm run build`).
+   - Validates Android Gradle compilation (`./gradlew test assembleDebug`).
 
+2. **`release.yml` (Continuous Delivery)**:
+   - Triggers on version tags (`v*`) or manual click from the **GitHub Actions** tab.
+   - Compiles and signs the installable Android APK (`TheCollegeLife-vX.X.X.apk`).
+   - Builds the Google Play Store bundle (`TheCollegeLife-PlayStore-vX.X.X.aab`).
+   - Packages the Spring Boot standalone microservice (`TheCollegeLife-backend-vX.X.X.jar`).
+   - Automatically publishes an official GitHub Release with SHA-256 integrity checksums.
 
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
